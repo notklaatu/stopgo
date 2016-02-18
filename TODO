@@ -1,0 +1,17 @@
+-*- mode:org -*-
+
+TO DO
+======
+
+* TODO add ability to import ("convert") a directory of existing images to a timeline
+** if a sequence of DSC000X.JPG or whatever is provided, then  adapt project to use 00X.png as prefix for our snapshots
+
+** skill-level: intermediate + sqlite3 experience
+* TODO right now we are locked into PNG. We need to determine what format something uses, because some cameras will use JPG or whatever
+** skill-level: basic to intermediate
+* TODO drag and drop reordering of frames (we have the framework for this, just have not implemented)
+** skill-level: intermediate to advanced
+* TODO undo history instead of just the most-recent one deletion
+** skill-level: intermediate to advanced
+* TODO add a probe-camera option so we don't always have to launch stopgo BEFORE attaching camera
+** skill-level: basic to intermediate

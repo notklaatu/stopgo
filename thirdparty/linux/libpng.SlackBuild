@@ -1,0 +1,134 @@
+#!/bin/sh
+
+# Copyright 2005-2012  Patrick J. Volkerding, Sebeka, MN, USA
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+VERSION_OLD=1.2.50
+VERSION_NEW=1.4.12
+BUILD=${BUILD:-1}
+
+# Automatically determine the architecture we're building on:
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) export ARCH=i486 ;;
+    arm*) export ARCH=arm ;;
+    # Unless $ARCH is already set, use uname -m for all other archs:
+       *) export ARCH=$( uname -m ) ;;
+  esac
+fi
+
+if [ "$ARCH" = "x86_64" ]; then
+  LIBDIRSUFFIX="64"
+else
+  LIBDIRSUFFIX=""
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp}
+PKG=$TMP/package-libpng
+rm -rf $PKG
+mkdir -p $TMP $PKG/usr
+
+build_source() {
+
+cd $TMP
+rm -rf libpng-$VERSION
+tar xvf $CWD/libpng-$VERSION.tar.?z* || exit 1
+cd libpng-$VERSION
+chown -R root:root .
+find . \
+  \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+  -exec chmod 755 {} \; -o \
+  \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+  -exec chmod 644 {} \;
+
+# Look like using ./configure is the only way that works now...
+./configure --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --mandir=/usr/man
+
+make -j4 prefix=/usr LIBPATH=/usr/lib${LIBDIRSUFFIX} ZLIBLIB="-L/usr/lib${LIBDIRSUFFIX} -lm -lz" || exit 1
+make install prefix=/usr LIBPATH=/usr/lib${LIBDIRSUFFIX} ZLIBLIB="-L/usr/lib${LIBDIRSUFFIX} -lm -lz" DESTDIR=$PKG
+
+# I'm ditching this to see if anyone cares.
+#
+## This symlink is needed to keep old applications running:
+## I guess the real lib used the major number 3, then 0 for
+## a short while, and now .3 again.  Hopefully it will stay
+## this way as it was .3 in Slackware 10.2.  One can hope.
+#( cd $PKG/usr/lib${LIBDIRSUFFIX}
+#  if [ ! -e libpng.so.0 -a -e libpng.so.3 ]; then
+#    ln -sf libpng.so.3 libpng.so.0
+#  fi
+#)
+
+# Well, glad I got rid of the above, but <someone> upstream still does not
+# grok shared libraries on Linux it seems -- libpng-1.4.0 caused all the
+# newly compiled binaries to want libpng.so.14, and now libpng-1.4.1
+# wants to change that to libpng14.so.14.  Searching online finds that
+# we are not the only ones with binaries that want libpng.so.14, so we
+# are forced to provide a compatibility symlink again...  :-/
+#
+# We'll try to remove this in 5 to 10 years, just like before.
+( cd $PKG/usr/lib${LIBDIRSUFFIX}
+  if [ ! -e libpng.so.14 -a -e libpng14.so.14 ]; then
+    ln -sf libpng14.so.14 libpng.so.14
+  fi
+)
+
+find $PKG | xargs file | grep -e "executable" -e "shared object" \
+  | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null
+
+gzip -9 --force $PKG/usr/man/man?/*.?
+
+mkdir -p $PKG/usr/doc/libpng-$VERSION
+cp -a \
+  ANNOUNCE CHANGES INSTALL KNOWNBUG LICENSE README TODO Y2KINFO \
+  libpng*.txt example.c \
+  $PKG/usr/doc/libpng-$VERSION
+
+# If there's a ChangeLog, installing at least part of the recent history
+# is useful, but don't let it get totally out of control:
+if [ -r ChangeLog ]; then
+  DOCSDIR=$(echo $PKG/usr/doc/libpng-$VERSION)
+  cat ChangeLog | head -n 1000 > $DOCSDIR/ChangeLog
+  touch -r ChangeLog $DOCSDIR/ChangeLog
+fi
+
+}
+
+# Build the 1.2 version:
+VERSION=$VERSION_OLD
+build_source
+
+# Build the 1.4 version:
+VERSION=$VERSION_NEW
+build_source
+
+# Default the includes to version 1.4.x:
+( cd $PKG/usr/include ; ln -sf libpng14 libpng )
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+
+cd $PKG
+/sbin/makepkg -l y -c n $TMP/libpng-$VERSION-$ARCH-$BUILD.txz
+

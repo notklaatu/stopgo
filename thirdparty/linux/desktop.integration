@@ -1,0 +1,11 @@
+#!/bin/bash
+# Add desktop integration
+
+XAPP=stopgo
+
+echo 'start wget'
+wget -O $XAPP.appdir/usr/bin/$XAPP.wrapper \
+https://raw.githubusercontent.com/probonopd/AppImageKit/master/desktopintegration
+
+chmod a+x $XAPP.appdir/usr/bin/$XAPP.wrapper
+sed -i -e "s|Exec=$XAPP|Exec=$XAPP.wrapper|g" $XAPP.appdir/$XAPP.desktop

@@ -1,0 +1,49 @@
+Third Party Libs
+================
+
+This directory does not, but should, contain "third party" libraries
+required to run StopGo on Windows. 
+
+Wget the contents of each *url file, and you'll end up with all the sources you need.
+
+
+NSIS
+----
+
+This is the "install wizard" builder. It runs on Linux and produces
+.exe installers for Windows. This is not a part of StopGo, but the
+infrastructure to help install StopGo on Windows.
+
+
+stopgo-win-deps.nsi
+-------------------
+
+NSIS script to build a downloadable (50 mb) installer for Python,
+Distutils (not actually needed right now), and wxPython.
+
+Renders ``stopgo_dependencies.exe``
+
+Users really should install these dependencies themselves, but since
+so many of our users are anticipated to be children, we are being
+nice.
+
+
+stopgo.nsi
+----------
+
+NSIS script to install the entire stopgo directory structure into
+C:\Program\ Files
+
+Renders ``stopgo-installer.exe``
+
+
+VLC
+---
+
+Not included; user must install this themselves.
+
+
+ffmpeg
+------
+
+Not included, and that's a problem. We need to include this.

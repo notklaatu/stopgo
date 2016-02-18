@@ -1,0 +1,41 @@
+Third Party Libs
+================
+
+This directory does not, but should, contain "third party" libraries
+required to run StopGo. Wget the contents of each *url file, and
+you'll end up with all the sources you need.
+
+The *SlackBuilds are provided for reference. You can run them, but you
+MUST comment out the last command (the makepkg part) or else it'll get
+bundled up.
+
+
+
+VLC
+----
+
+This requires no compilation; just unzip to a valid PYTHONPATH in
+working appdir. In practise, the Makefile does this for you.
+
+
+
+libPNG
+------
+
+As Pat points out in his SlackBuild, libpng is a little confused. Our AppDir ISO will not recognise symlink cheats, so we need to end up with a lib called libpng.so.14
+ 
+cd $PKG/usr/lib${LIBDIRSUFFIX}
+  if [ ! -e libpng.so.14 -a -e libpng14.so.14 ]; then
+    ln -sf libpng14.so.14 libpng.so.14
+  fi
+
+
+
+Everything Else
+---------------
+
+Compile the libraries and then install with DESTDIR set to the
+root of the working .appdir directory.
+
+Do this for both x86 and x86_64 Linux versions.
+

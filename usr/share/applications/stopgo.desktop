@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=StopGo
+GenericName=Stop Motion Animator
+X-GNOME-FullName=StopGo Stop Motion Animator
+Comment=Create stop motion animation
+Exec=stopgo %F
+Terminal=false
+Type=Application
+Icon=stopgo
+Categories=Video;AudioVideoEditing;
+MimeType=application/vnd.stopgo-project;
+X-AppInstall-Package=stopgo
+X-Ubuntu-Gettext-Domain=StopGo

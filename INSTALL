@@ -1,0 +1,83 @@
+Install
+=======
+
+StopGo is a Python application, and uses wxPython for its GUI, so it's
+very cross-platform. Should work with practically anything. But it's a
+multimedia application, so there are some software requirements:
+
+
+Requirements (Software)
+-----------------------
+
+* python `<python.org>`_
+* wxpython `<wxpython.org>`_
+* vcl `<https://videolan.org>`_
+* vlc.py `<https://pypi.python.org/pypi/python-vlc>`_
+* ffmpeg `<https://www.ffmpeg.org/>`_
+
+
+Requirements (Hardware)
+-----------------------
+
+* Computer. Any recent computer should be able to run StopGo. In fact,
+  even old computers (my laptop is 12) should run it, although very
+  old computers may struggle with playing your movie back *inside of
+  StopGo*; after you export it to a movie file, it can be played by
+  anything that has a web browser.  
+* Webcam. USB webcams are what we have tested, but at least on Linux
+  nearly any camera should work, as long as your computer registers it
+  as a video device.
+
+
+
+Install
+-------
+
+StopGo is written in Python, so installation is fairly flexible as
+long as you know Python. 
+
+If not, let's keep it simple:
+
+
+Linux (Users)
++++++++++++++
+
+This is by far the easiest install method.
+
+If you are running Linux (even if only as a live OS), then there
+*is* no install. Just download StopGo, double click, and you're
+animating.
+
+In order for StopGo to run, though, you will need VLC and ffmpeg
+installed. You should be able to install these from your Linux
+distribution's software repository.
+
+.. note:: On some versions of Debian (and things based on it, like
+   Ubuntu and Mint), the ``ffmpeg`` package actually installs
+   ``avconv``. This will NOT work. You NEED
+   ffmpeg. https://assetbank.co.uk/support/documentation/install/ffmpeg-debian-squeeze/ffmpeg-debian-jessie/
+
+
+
+Mac OS
+++++++++
+
+Install VLC.
+
+Install FFmpeg.
+
+StopGo is not yet supported. Coming soon-ish.
+
+
+Windows
+++++++++
+
+Install VLC.
+
+Install FFmpeg.
+
+Run the stopgo-dependencies.exe to install Python and wxPython.
+
+Run the stopgo-installer.exe to install StopGo.
+
+Launch StopGo; if you are prompted, run it in Python. 
