@@ -125,8 +125,17 @@ parseargs()
         esac
     done
     
-    TARGETDIR=`echo "${1}" | sed 's/.appdir//'`.appdir
-    DEF_APPNAME=`echo "${1}" | sed 's/.appdir//' | tr -d ' '`
+    CWD=`pwd`
+
+    if [ -z "${1}" ]; then
+	echo "hey no project name"
+	DEF_APPNAME=`basename "${CWD}"`
+    else
+	echo "project name found"
+	DEF_APPNAME=`echo "${1}" | sed 's/\.[Aa]pp[Dd]ir//' | tr -d ' '`
+    fi
+
+    TARGETDIR="${DEF_APPNAME}.appdir"
     
     if [ -z "${TARGETDIR}" ]; then
         usage

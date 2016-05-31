@@ -3,7 +3,8 @@
 
 VERSION=0.8.0
 SCR=`echo $0 | rev | cut -f1 -d"/" |rev`
-ACT=`which cp`
+ACT="cp"
+MKACT="mkdir"
 
 usage(){
     echo "Analyse BASIS for required libs, and copy those libs to DEST"
@@ -23,15 +24,17 @@ version() {
 }
 
 type_test() {
-    local ITEM="$1"
-    echo "type_testing $ITEM"
     local FTYPE="$2"
-    echo "type_testing $FTYPE"
-    echo $FTYPE
-    local TESTD=$(echo `file -b "$ITEM"` | grep $FTYPE)
+    #echo "$FTYPE"
+
+    local ITEM="$1" #testdir 
+    #echo $ITEM
+
+    TESTD=$(echo `file -Lb $ITEM` | grep -i $FTYPE)
+    echo $TESTD
 
     if [ -z "$TESTD" ]; then
-	echo "Wrong file type detected:"
+	echo "Wrong file type detected: $ITEM"
 	echo "$FTYPE was expected."
 	exit 1
     fi
@@ -45,17 +48,18 @@ cp_support_shared_libs(){
 	type_test $DEST "directory"
 
 	BASIS="$1"
-	echo "basis is $BASIS" #debug
+	#echo "basis is $BASIS" #debug
 	type_test $BASIS "dynamically"
 	
 	local files=""
         files="$(ldd $BASIS | awk '{ print $3 }' | sed  '/^$/d')"
- 
+	echo $files #debug
+
         for i in $files
         do
           dcc="${i%/*}" # get dirname only
-          [ ! -d ${DEST}${dcc} ] && mkdir -p ${DEST}${dcc}
-          "${ACT}" -f $VERBOSE $i ${DEST}${dcc}
+          [ ! -d ${DEST}${dcc} ] && "${MKACT}" -p ${DEST}${dcc}
+          "${ACT}" -H -f $VERBOSE $i ${DEST}${dcc}
         done
  
         # Works with 32 and 64 bit ld-linux
@@ -81,6 +85,7 @@ while [ True ]; do
 	shift 1
     elif [ "$1" = "--dryrun" -o "$1" = "-d" -o "$1" = "--dry-run" ]; then
 	ACT="echo"
+	MKACT="echo"
 	DRYRUN=1
 	shift 1
     else
@@ -88,8 +93,14 @@ while [ True ]; do
     fi
 done
 
-echo "i see $1 as 1" #debug
-echo "i see $2 as 2" #debug
+if [ -z "${2}" ]; then
+    usage
+fi
+
+# executable ends up as $1
+# dest ends up as $2
+FROM="${1}"
+TO="${2}"
 
 # call to main
-cp_support_shared_libs $1 $2
+cp_support_shared_libs $FROM $TO
