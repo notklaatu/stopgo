@@ -5,7 +5,7 @@
 
 PKGDIR = stopgo.appdir
 PYTHON = python2.7
-VLC = python_vlc-1.1.2-py2.7.egg
+VLC = thirdparty/linux/python_vlc-1.1.2-py2.7.egg
 WX  = wxPython-src-2.8.12.1.tar.bz2
 PNG = libpng-1.4.12.tar.xz
 JPG = jpegsrc.v8a.tar.xz
@@ -57,7 +57,7 @@ downwind:
 
 
 linux: $(VLC)
-	@sh ./genappdir.sh -i ./usr/share/icons/stopgo.png -d ./usr/share/applications/stopgo.desktop $(PKGDIR)
+	@sh ./genappdir.sh -a $(HOME)/bin/AppImageAssistant.AppDir/AppRun -i ./usr/share/icons/stopgo.png -d ./usr/share/applications/stopgo.desktop $(PKGDIR)
 	@cp -rv ./usr $(PKGDIR)
 	@convert ./usr/share/icons/hicolor/scalable/stopgo.svg -size 256x256 $(PKGDIR)/usr/share/icons/stopgo.png
 	@convert ./usr/share/icons/hicolor/scalable/stopgo.svg -size 96x96 $(PKGDIR)/stopgo.png
@@ -70,7 +70,7 @@ linux: $(VLC)
 	@find $(PKGDIR)/usr/lib64/ -type f -exec sed -i -e 's|/usr|././|g' {} \;
 	@find $(PKGDIR)/usr/lib64/ -type f -exec sed -i -e 's|././/bin/env|/usr/bin/env|g' {} \;
 	@find $(PKGDIR)/usr/lib64/ -type f -exec sed -i -e 's|././/bin/python|/usr/bin/python|g' {} \;
-	@$(HOME)/bin/AppImageAssistant.AppDir/package $(PKGDIR) stopgo.AppDir
+	@$(HOME)/bin/AppImageAssistant.AppDir/package $(PKGDIR) stopgo.AppImage
 
 
 mac:
