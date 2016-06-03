@@ -353,7 +353,7 @@ class GUI(wx.Frame):
             for entry in latestfram:
                 self.framlog = int(entry[1].split('.')[0])
                 self.framlog += 1
-                # print(self.framlog) #DEBUG
+                #print(self.framlog) #DEBUG
         except:
             print('looking for last frame but did not find')
             pass
@@ -489,7 +489,7 @@ class GUI(wx.Frame):
 
         # get new selection 
         self.selected = e.GetEventObject()
-        print( self.selected )
+        #print( self.selected )#debug
 
         # desaturate new selection
         img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), 100)
@@ -533,6 +533,7 @@ class GUI(wx.Frame):
         self.previous = self.selected.GetId()
         self.viewport.Refresh()
 
+
     def OnPaint(self, event):
 
         if _plat.startswith('linux'):
@@ -573,22 +574,30 @@ class GUI(wx.Frame):
 
 
     def CaptureCanvas(self,e,args):
-        try:
-            if self.selected:
-                print('SELECTED DETECTED')
-                self.selected = self.previous
-                self.framlog -= 1                
-                pass
-        except:
-            pass
+        playstat = str(self.player.get_state())
+        #print(playstat)
+
+        if not playstat == "State.Playing":
+            #print('SELECTED DETECTED', self.framlog)#debug
+            self.framlog = self.framlog
+            # restore colour
+            img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), 100)
+            self.selected.SetBitmap(wx.BitmapFromImage(img) )
+            self.player.play()
+        else:
+            #print('NO SELECT DETECT')
+            self.TakeSnapshot(e,args)
+
+
+    def TakeSnapshot(self,e,args):
 
         print('CAPTURE')#DEBUG
         if self.camset == 1:
             self.framlog += 1
+
             #print(self.camhero)#DEBUG
             vidcap = vlc.libvlc_video_take_snapshot(self.player, 0, os.path.join(self.imgdir, str(self.framlog).zfill(3)+'.png'), 0,0)
             self.cur.execute('INSERT INTO Timeline VALUES(Null,?,?)', (str(self.framlog).zfill(3)+'.png',0))
-
             # add graphically to timeline
             img = self.MakeThumbnail(os.path.join(self.imgdir, str(self.framlog).zfill(3)+'.png'), 100)
             self.imageCtrl = wx.StaticBitmap(self.panel3, wx.ID_ANY, wx.BitmapFromImage(img),name=str(self.framlog).zfill(3)+'.png') 
@@ -609,6 +618,7 @@ class GUI(wx.Frame):
             # send the shot to onion skin
             img = os.path.join(self.imgdir, str(self.framlog).zfill(3)+'.png')
             self.OnionSkin(img)
+            #print(self.framlog)
 
         else:
             dlg = wx.MessageDialog(self, 'Please select your camera first.','',wx.OK | wx.ICON_ERROR)
@@ -617,6 +627,9 @@ class GUI(wx.Frame):
                 dlg.Destroy()
             if val == wx.ID_CANCEL:
                 dlg.Destroy()
+
+        self.player.play()
+
 
     def SimpleQuit(self,e):
         '''
