@@ -21,11 +21,11 @@ def getOptions():
 
     options = parser.parse_args(args)
     opts = vars(options)
-
+    '''
     if not opts.has_key('project'):
         opts['project'] = 'stopgo_project.db'
 
-    '''
+
     if not opts.has_key('config'):
         if os.path.isfile( os.path.join( HOME + '.config/stopgo.conf' ) ):
             opts['config'] = os.path.isfile( os.path.join( HOME + '/.config/stopgo.conf' ) ):

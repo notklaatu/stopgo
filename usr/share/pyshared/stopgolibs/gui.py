@@ -10,7 +10,9 @@ import pref
 import startprompt
 import about
 import json
+import re
 import vlc
+import shutil
 import subprocess
 from sys import platform as _plat
 import sys
@@ -140,13 +142,14 @@ class GUI(wx.Frame):
         #gather prefs
         self.PrefProbe()
 
-        #if stopgo was started pointing at a project
-        if self.clargs['project']:
-            startprompt.Choice(self,-1)
-        else:
+        #was stopgo started pointing at a project directory?
+        if self.clargs.has_key('project'):
             self.WorkSpace(False)
-            print('DEBUG: project name was provided from shell')
-
+            print('DEBUG: project name was provided from shell')#DEBUG
+        else:
+            #or was stopgo started with no directory?
+            print('DEBUG: no target dir provided.')#DEBUG
+            startprompt.Choice(self,-1)
 
     def CreateMenuBar(self):
         menubar = wx.MenuBar()
@@ -155,7 +158,6 @@ class GUI(wx.Frame):
         oitem = fileMenu.Append(wx.ID_OPEN, '&Open', 'Open project')
         self.ritem = fileMenu.Append(wx.ID_SAVEAS, '&Render\tCtrl-r', 'Render')
         self.qitem = fileMenu.Append(wx.ID_EXIT, '&Quit', 'Quit application')
-
 
 
         editMenu = wx.Menu()
@@ -194,19 +196,39 @@ class GUI(wx.Frame):
         self.Bind(wx.EVT_BUTTON, lambda event, args=(dbfile): self.CaptureCanvas(event,args), self.brec)
 
         self.panel3.Bind(wx.EVT_KEY_DOWN, lambda event, args=(dbfile): self.OnKeyDown(event, args))
+        self.panel3.Bind(wx.EVT_LEFT_DOWN, self.OnMouseClick)
         self.Bind(wx.EVT_MENU, lambda event, args=(dbfile):self.OnQuit(event,args), self.qitem)
         self.Bind(wx.EVT_CLOSE, lambda event, args=(dbfile):self.OnQuit(event,args), self.qitem)
         self.Bind(wx.EVT_MENU, lambda event, args=(dbfile): self.OnRender(event,args), self.ritem)
+
 
     def WorkSpace(self,e ):
         '''
         Load in a project.
         '''
 
+        print(self.clargs)
         dbfile = self.clargs['project']
         #print("you request", dbfile)
 
-        if not os.path.isfile(dbfile):
+        # look in directory, see if images exist
+        if os.path.isdir(self.clargs['project']):
+            POPULATION = os.listdir(self.clargs['project'])
+            IMGS = [ 'jpg','jpeg','png','tif','tga' ]
+            self.POPLIST = []
+            
+            for e in POPULATION:
+                for match in IMGS:
+                    if match in e:
+                        print(e)
+                        self.POPLIST.append(e)
+
+            if len(self.POPLIST) > 0:
+                print('No project file, but images were found.')#DEBUG
+                self.NewFile(True)
+
+        # no project file found
+        elif not os.path.isfile(dbfile):
             dlg = wx.MessageDialog(self, 'Project not found. Browse for the file?', 
                 '',wx.YES_NO | wx.YES_DEFAULT 
                 | wx.CANCEL | wx.ICON_QUESTION)
@@ -219,6 +241,7 @@ class GUI(wx.Frame):
             elif val == wx.ID_CANCEL:
                 dlg.Destroy()
 
+        #or none of the above?
         else:
             self.OpenFile(False,dbfile)
 
@@ -285,6 +308,15 @@ class GUI(wx.Frame):
         #print(dbfile)
         #print(projpath)
         #print(self.imgdir)
+
+        try:
+            if len(self.POPLIST) > 0:
+                for item in self.POPLIST:
+                    shutil.copy2(os.path.join(self.clargs['project'],item), self.imgdir)#DEBUG
+                    #shutil.move(os.path.join(self.clargs['project'],item), self.imgdir)
+        except:
+            pass
+
         self.con = sq.connect(dbfile, isolation_level=None )
 
         self.cur = self.con.cursor()
@@ -293,6 +325,13 @@ class GUI(wx.Frame):
         self.cur.execute("INSERT INTO Project(Path, Name, timestamp) VALUES (?,?,?)", ("images", "StopGo Project", datetime.now() ))
         #self.con.close()
         self.BindKeys(dbfile)
+
+        if len(self.POPLIST) > 0:
+            for counter, item in enumerate( sorted(os.listdir(self.imgdir)) ):
+                self.cur.execute("INSERT INTO Project(Path, Name, timestamp) VALUES (?,?,?)", ("images", "Default Project", datetime.now() ))
+                self.cur.execute("INSERT INTO Project(Path, Name, timestamp) VALUES (?,?,?)", ("images", "Default Project", datetime.now() ))
+                self.cur.execute('INSERT INTO Timeline VALUES(?,?,?)', (counter,item,0))
+
 
         sb = self.GetStatusBar()
         stat = os.path.basename(projpath) + ' created'
@@ -309,11 +348,15 @@ class GUI(wx.Frame):
 
         # the last frame is
         latestfram = self.cur.execute("SELECT * FROM Timeline ORDER BY Image DESC LIMIT 1")
-        #latestfram = cur.execute("SELECT * FROM Timeline WHERE ID = (SELECT MAX(ID) FROM TABLE) AND Blackspot = 0");
-        for entry in latestfram:
-            self.framlog = int(entry[1].split('.')[0])
-            self.framlog += 1
-            # print(self.framlog) #DEBUG
+        #latestfram = self.cur.execute("SELECT * FROM Timeline WHERE ID = (SELECT MAX(ID) FROM TABLE) AND Blackspot = 0");
+        try:
+            for entry in latestfram:
+                self.framlog = int(entry[1].split('.')[0])
+                self.framlog += 1
+                # print(self.framlog) #DEBUG
+        except:
+            print('looking for last frame but did not find')
+            pass
 
         # timeline contains
         tbl_timeline = self.cur.execute("SELECT * FROM Timeline WHERE Blackspot=0")
@@ -338,6 +381,10 @@ class GUI(wx.Frame):
         self.panel3.Update()
 
         self.Refresh()
+
+        if self.POPLIST:
+            print('yes there are images. yes i should create a timeline.')
+
         '''
         # TODO: this sorta converts a dir of images to a timeline
         for counter, item in enumerate( sorted(os.listdir('images')) ):
@@ -427,6 +474,10 @@ class GUI(wx.Frame):
         return img
 
 
+    def OnMouseClick(self,e):
+        print('panel3 clicked')#debug
+        self.selected = 0
+
     def OnLeftClick(self,e):
 
         # give colour back to old selection
@@ -438,6 +489,7 @@ class GUI(wx.Frame):
 
         # get new selection 
         self.selected = e.GetEventObject()
+        print( self.selected )
 
         # desaturate new selection
         img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), 100)
@@ -521,7 +573,16 @@ class GUI(wx.Frame):
 
 
     def CaptureCanvas(self,e,args):
-        #print('CAPTURE')#DEBUG
+        try:
+            if self.selected:
+                print('SELECTED DETECTED')
+                self.selected = self.previous
+                self.framlog -= 1                
+                pass
+        except:
+            pass
+
+        print('CAPTURE')#DEBUG
         if self.camset == 1:
             self.framlog += 1
             #print(self.camhero)#DEBUG
