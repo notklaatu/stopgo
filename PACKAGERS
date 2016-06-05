@@ -1,3 +1,46 @@
 Packagers
 =========
 
+Linux
+-----
+
+
+
+
+
+
+Windows
+-------
+
+You have to package for Windows from Windows, so if you don't have Windows then
+you cannot, I guess, package this application for it. If you try to package it on WINE and have success, let us know!!
+
+Requirements
+++++++++++++
+
+To package on Windows, you must install these packages from the thirdparty directory:
+
+* python 2.x
+* nsis
+* wxpython
+
+as well as:
+
+* `cx_freeze <https://sourceforge.net/projects/cx-freeze/>`_
+
+
+Build
++++++
+
+1. Build the project from a DOS (*not* Cygwin or BASH) shell:
+
+   .. code::
+      python setup.win.py build
+
+2. This produces ``build\exe.win32-2.7``
+
+3. Launch NSIS and choose ``Compile NSI Scripts``
+
+4. Drag-and-drop the stopgo.nsi script into the NSIS window.
+
+5. You now have ``stopgo-installer.exe``. It should be megabytes in size. If it is less than a few megabytes, you have done something wrong (probably you moved the ``.nsi`` script; it wants to co-exist with the ``exe.win32-2.7`` directory.
