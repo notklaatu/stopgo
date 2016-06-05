@@ -18,7 +18,12 @@ import os
 import site
 
 # The name of library dir is stopgolibs
-d = str(os.path.basename(__file__) ) + 'libs'
+if getattr(sys, 'frozen', False):
+    # frozen
+    d = os.path.dirname(sys.executable)
+else:
+    # unfrozen
+    d = str(os.path.basename(__file__) ) + 'libs'
 
 # Are the libs already installed?
 for dirpath in sys.path:
