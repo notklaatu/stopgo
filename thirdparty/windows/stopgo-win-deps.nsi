@@ -3,7 +3,7 @@ Name "Python Bundle for StopGo"
 OutFile "stopgo_dependencies.exe"
 ShowInstDetails hide
 
-!Include "ZipDLL.nsh"
+!include "EnvVarUpdate.nsh"
 
 InstallDir "C:\Python27\"
 
@@ -30,12 +30,12 @@ Section "Setuptools 20.1.1"
 SectionEnd
 
 Section "WinFF 1.5.4"
-	SetOutPath "C:\"
-	File "WinFF-1.5.4-Setup-3.exe"
-	ExecWait "C:\WinFF-1.5.4-Setup-3.exe"
-	Delete "C:\WinFF-1.5.4-Setup-3.exe"
-	Push "PATH"
-	Push $INSTDIR
-	Call AddToEnvVar
-	MessageBox MB_OK "Installation Complete"
+    SetOutPath "C:\"
+    File "WinFF-1.5.4-Setup-3.exe"
+    Exec "C:\WinFF-1.5.4-Setup-3.exe"
+    DetailPrint "Installing WinFF and ffmpeg..."
+    MessageBox MB_OK "Installation Complete"
+    ${EnvVarUpdate} $0 "PATH" "A" "HKLM" "C:\Program Files\WinFF\"
+    Delete "C:\WinFF-1.5.4-Setup-3.exe"
 SectionEnd
+
