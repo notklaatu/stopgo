@@ -27,5 +27,15 @@ Section "Setuptools 20.1.1"
     File ez_setup.py
 	DetailPrint "Executing ez_setup.py for Python setuptools..."
 	nsExec::ExecToLog '"C:\Python27\python.exe" ez_setup.py'
+SectionEnd
+
+Section "WinFF 1.5.4"
+	SetOutPath "C:\"
+	File "WinFF-1.5.4-Setup-3.exe"
+	ExecWait "C:\WinFF-1.5.4-Setup-3.exe"
+	Delete "C:\WinFF-1.5.4-Setup-3.exe"
+	Push "PATH"
+	Push $INSTDIR
+	Call AddToEnvVar
 	MessageBox MB_OK "Installation Complete"
 SectionEnd
