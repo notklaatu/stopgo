@@ -13,7 +13,7 @@ if sys.platform == "win32":
     base = "Win32GUI"
 
 setup(  name = "StopGo",
-        version = "0.0.9",
+        version = "0.10.1",
         description = "StopGo Stop Motion Animation",
         options = {"build_exe": build_exe_options},
         include_files = (os.path.join("usr","share","pyshared","stopgolibs")),
