@@ -26,7 +26,18 @@ To package on Windows, you must install these packages from the thirdparty direc
 
 as well as:
 
-* `cx_freeze <https://sourceforge.net/projects/cx-freeze/>`_
+* `cx_freeze <https://sourceforge.net/projects/cx-freeze/>`_ but that currently fails to build occasionally, so use either
+ 
+   * cx_Freeze-4.3.4-cp27-none-win32.whl
+   * cx_Freeze-4.3.4-cp27-none-win_amd64.whl
+
+from `lfd.uci.edu/~gohlke/pythonlibs <http://www.lfd.uci.edu/~gohlke/pythonlibs/>`_
+
+
+Setup
++++++
+
+Put ``vlc.py`` into ``/usr/shared/pyshared/stopgolibs`` or else cx_freeze will not be able to find it.
 
 
 Build
