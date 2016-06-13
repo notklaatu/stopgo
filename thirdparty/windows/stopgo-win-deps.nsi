@@ -4,6 +4,7 @@ OutFile "stopgo_dependencies.exe"
 ShowInstDetails hide
 
 !include "EnvVarUpdate.nsh"
+!include x64.nsh    
 
 InstallDir "C:\Python27\"
 
@@ -34,8 +35,7 @@ Section "WinFF 1.5.4"
     File "WinFF-1.5.4-Setup-3.exe"
     Exec "C:\WinFF-1.5.4-Setup-3.exe"
     DetailPrint "Installing WinFF and ffmpeg..."
-    MessageBox MB_OK "Installation Complete"
-    ${EnvVarUpdate} $0 "PATH" "A" "HKLM" "%PROGRAMFILES%\WinFF\"
+    ${EnvVarUpdate} $0 "PATH" "A" "HKLM" "$PROGRAMFILES32\WinFF\"
     Delete "C:\WinFF-1.5.4-Setup-3.exe"
 SectionEnd
 
