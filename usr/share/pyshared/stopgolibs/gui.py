@@ -207,30 +207,12 @@ class GUI(wx.Frame):
         Load in a project.
         '''
 
-        print(self.clargs)
+        print(self.clargs)#DEBUG
         dbfile = self.clargs['project']
-        #print("you request", dbfile)
 
-        # look in directory, see if images exist
-        if os.path.isdir(self.clargs['project']):
-            POPULATION = os.listdir(self.clargs['project'])
-            IMGS = [ 'jpg','jpeg','png','tif','tga' ]
-            self.POPLIST = []
-            
-            for e in POPULATION:
-                for match in IMGS:
-                    if match in e:
-                        print(e)
-                        self.POPLIST.append(e)
-
-            if len(self.POPLIST) > 0:
-                print('No project file, but images were found.')#DEBUG
-                self.NewFile(True)
-
-        # no project file found
-        elif not os.path.isfile(dbfile):
+        if not os.path.isfile(dbfile):
             dlg = wx.MessageDialog(self, 'Project not found. Browse for the file?', 
-                '',wx.YES_NO | wx.YES_DEFAULT 
+                                   '',wx.YES_NO | wx.YES_DEFAULT 
                 | wx.CANCEL | wx.ICON_QUESTION)
 
             val = dlg.ShowModal()
@@ -240,11 +222,8 @@ class GUI(wx.Frame):
                 
             elif val == wx.ID_CANCEL:
                 dlg.Destroy()
-
-        #or none of the above?
         else:
             self.OpenFile(False,dbfile)
-
 
         #update timeline view
         self.Layout()
@@ -282,12 +261,19 @@ class GUI(wx.Frame):
     def NewFile(self,e):
 
         wcd='All files(*)|*'
-        directory = os.getcwd()
         dest = 'stopgo_project_'
         destid = int(time.time())
+
+        try:
+            dirname = self.clargs['project']
+        except OSError:
+            dirname = os.path.expanduser('~')
+        except:
+            # TODO: add a preference in which default save directory can be set
+            dirname = os.path.join(os.path.expanduser('~'),'Desktop')
         
         sd = wx.FileDialog(self, message='Save file as...', 
-            defaultDir=directory, defaultFile='stopgo_project_' + str(destid),
+            defaultDir=dirname, defaultFile='stopgo_project_' + str(destid),
             wildcard=wcd, 
             style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 
@@ -401,11 +387,17 @@ class GUI(wx.Frame):
         if not filename:
             wcd = 'All files (*)|*|StopGo files (*.db)|*.db'
 
-            dirname = os.getcwd()
-
+        try:
+            dirname = self.clargs['project']
+        except OSError:
+            dirname = os.path.expanduser('~')
+        except:
+            # TODO: add a preference in which default save directory can be set
+            dirname = os.path.join(os.path.expanduser('~'),'Desktop')
+                
             od = wx.FileDialog(self, message='Choose a file', 
-                               defaultDir=os.path.expanduser('~'), defaultFile='', 
-                wildcard=wcd, style=wx.FD_OPEN|wx.FD_CHANGE_DIR)
+                               defaultDir=dirname,defaultFile='',
+                               wildcard=wcd, style=wx.FD_OPEN|wx.FD_CHANGE_DIR)
 
             if od.ShowModal() == wx.ID_OK:
                 dbfile = od.GetPath()
