@@ -43,6 +43,9 @@ class GUI(wx.Frame):
         Create the $APP window, but do not load a project.
         '''
 
+        #gather prefs
+        self.PrefProbe()
+
         self.CreateMenuBar()
         self.BuildStatusBar()
 
@@ -141,16 +144,12 @@ class GUI(wx.Frame):
             dlg = wx.MessageDialog(self, 'Missing VLC library. You need to install VLC from http://videolan.org', 
                 '',wx.OK | wx.ICON_ERROR)
             val = dlg.ShowModal()
-
             if val == wx.ID_OK:
                 dlg.Destroy()
 
         #instatiate VLC
         self.Instance = vlc.Instance()
         self.player = self.Instance.media_player_new()
-
-        #gather prefs
-        self.PrefProbe()
 
         #was stopgo started pointing at a project directory?
         if self.clargs.has_key('project'):
@@ -164,11 +163,11 @@ class GUI(wx.Frame):
     def CreateMenuBar(self):
         menubar = wx.MenuBar()
         fileMenu = wx.Menu()
-        nitem = fileMenu.Append(wx.ID_NEW, '&New', 'New project')
+        nitem = fileMenu.Append(wx.ID_NEW,  '&New',  'New project' )
         oitem = fileMenu.Append(wx.ID_OPEN, '&Open', 'Open project')
         self.ritem = fileMenu.Append(wx.ID_SAVEAS, '&Render\tCtrl-r', 'Render')
+        self.iitem = fileMenu.Append(wx.ID_ANY, '&Import\tCtrl-i', 'Import image directory')
         self.qitem = fileMenu.Append(wx.ID_EXIT, '&Quit', 'Quit application')
-
 
         editMenu = wx.Menu()
         self.zitem = editMenu.Append(wx.ID_UNDO, '&Undo\tCtrl-z', 'Undo Delete')
@@ -186,6 +185,7 @@ class GUI(wx.Frame):
         self.Bind(wx.EVT_MENU, lambda event, args=(False): self.OpenFile(event,args), oitem)
         self.Bind(wx.EVT_MENU, self.NewFile, nitem)
         self.Bind(wx.EVT_MENU, self.Pref, pitem)
+        self.Bind(wx.EVT_MENU, lambda event, args=(False): self.OpenFile('import',args), self.iitem)
         self.Bind(wx.EVT_MENU, self.SimpleQuit, self.qitem)
         self.Bind(wx.EVT_CLOSE, self.SimpleQuit, self.qitem)
         self.Bind(wx.EVT_MENU, self.About, aitem)
@@ -395,20 +395,30 @@ class GUI(wx.Frame):
 
     def OpenFile(self,e,filename):
 
-        if not filename:
-            wcd = 'All files (*)|*|StopGo files (*.db)|*.db'
+        wcd = 'All files (*)|*|StopGo files (*.db)|*.db'
 
+        if ( e == 'import' ):
+            openMsg='Choose a image directory'
+            wcd = 'All files (*)|*|Image Directory (*)|*'
+        elif not filename:
+            openMsg='Choose a project file'
+        else:
+            openMsg='Choose a project file'
+            
         try:
             dirname = self.clargs['project']
         except OSError:
             dirname = os.path.expanduser('~')
         except:
-            # TODO: add a preference in which default save directory can be set
             dirname = os.path.join(os.path.expanduser('~'),self.myprefs['dir'])
-            
-            od = wx.FileDialog(self, message='Choose a file', 
-                               defaultDir=dirname,defaultFile='',
-                               wildcard=wcd, style=wx.FD_OPEN|wx.FD_CHANGE_DIR)
+            if ( e == 'import' ):
+                od = wx.DirDialog(self, message=openMsg,
+                                  style=wx.FD_OPEN|wx.FD_CHANGE_DIR)
+            else:
+                od = wx.FileDialog(self, message=openMsg,
+                                   defaultDir=dirname,defaultFile='',
+                                   wildcard=wcd, style=wx.FD_OPEN|wx.FD_CHANGE_DIR)
+                 
 
             if od.ShowModal() == wx.ID_OK:
                 dbfile = od.GetPath()
