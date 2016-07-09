@@ -149,8 +149,8 @@ class GUI(wx.Frame):
         else:
             #or was stopgo started with no directory?
             print('DEBUG: no target dir provided.')#DEBUG
-            startprompt.Choice(self,-1)
-
+            self.start = startprompt.Choice(self, -1)
+            
     def CreateMenuBar(self):
         menubar = wx.MenuBar()
         fileMenu = wx.Menu()
