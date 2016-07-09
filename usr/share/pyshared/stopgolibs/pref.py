@@ -29,18 +29,19 @@ class GUIPref(wx.Frame):
         lbl_pro = wx.StaticText(panel, label="Profile")
         lbl_fps = wx.StaticText(panel, label="FPS")
         lbl_bit = wx.StaticText(panel, label="Bitrate")
-
+        lbl_dir = wx.StaticText(panel, label="Default Save")
+        
         # empty spacer
         lbl_mt  = wx.StaticText(panel, label="")
 
         btn_ok  = wx.Button(panel, label="Save")
         btn_no  = wx.Button(panel, label="Cancel")
 
-        enclist = ['ffmpeg']#,'avconv']
+        enclist = ['ffmpeg']#, 'avconv']
         prolist = ['1080p','720p']
         fpslist = ['25','24','18','12','8']
         bitlist = ['7Mbps','14Mbps','21Mbps']
-        
+
         self.fld_enc = wx.ComboBox(panel, choices=enclist,
                                    style=wx.CB_READONLY)
         self.fld_pro = wx.ComboBox(panel, choices=prolist,
@@ -49,12 +50,14 @@ class GUIPref(wx.Frame):
                                    style=wx.CB_READONLY)
         self.fld_bit = wx.ComboBox(panel, choices=bitlist,
                                    style=wx.CB_READONLY)
+        self.fld_dir = wx.TextCtrl(panel, value="Desktop")
 
         try:
             self.fld_enc.SetValue(myprefs['encoder'])
             self.fld_pro.SetValue(myprefs['profile'])
             self.fld_fps.SetValue(myprefs['fps'])
             self.fld_bit.SetValue(myprefs['bitrate'])
+            self.fld_dir.SetValue(myprefs['dir'])
 
         except:
             pass
@@ -63,6 +66,7 @@ class GUIPref(wx.Frame):
                      (lbl_pro), (self.fld_pro, 1, wx.EXPAND),
                      (lbl_fps), (self.fld_fps, 1, wx.EXPAND),
                      (lbl_bit), (self.fld_bit, 1, wx.EXPAND),
+                     (lbl_dir), (self.fld_dir, 1, wx.EXPAND),
                      (btn_ok, 1, wx.EXPAND), (lbl_mt),
                      (btn_no, 1, wx.EXPAND) ])
 
@@ -82,6 +86,7 @@ class GUIPref(wx.Frame):
         pdict['profile'] = self.fld_pro.GetValue()
         pdict['fps']     = self.fld_fps.GetValue()
         pdict['bitrate'] = self.fld_bit.GetValue()
+        pdict['dir']     = self.fld_dir.GetValue()
 
         homedir = os.path.expanduser("~")
 

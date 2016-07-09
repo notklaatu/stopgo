@@ -38,7 +38,7 @@ class GUI(wx.Frame):
         self.Bind(wx.EVT_TIMER, self.OnTimer, id=ID_TIMER)
         self.clargs = clargs
         self.InitUI()
-
+        
     def InitUI(self):
         '''
         Create the $APP window, but do not load a project.
@@ -270,8 +270,9 @@ class GUI(wx.Frame):
             dirname = os.path.expanduser('~')
         except:
             # TODO: add a preference in which default save directory can be set
-            dirname = os.path.join(os.path.expanduser('~'),'Desktop')
-        
+            dirname = os.path.join(os.path.expanduser('~'),self.myprefs['dir'])
+
+            
         sd = wx.FileDialog(self, message='Save file as...', 
             defaultDir=dirname, defaultFile='stopgo_project_' + str(destid),
             wildcard=wcd, 
@@ -393,8 +394,8 @@ class GUI(wx.Frame):
             dirname = os.path.expanduser('~')
         except:
             # TODO: add a preference in which default save directory can be set
-            dirname = os.path.join(os.path.expanduser('~'),'Desktop')
-                
+            dirname = os.path.join(os.path.expanduser('~'),self.myprefs['dir'])
+            
             od = wx.FileDialog(self, message='Choose a file', 
                                defaultDir=dirname,defaultFile='',
                                wildcard=wcd, style=wx.FD_OPEN|wx.FD_CHANGE_DIR)
