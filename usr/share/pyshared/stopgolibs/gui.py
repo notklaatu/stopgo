@@ -11,7 +11,6 @@ import startprompt
 import about
 import json
 import re
-import vlc
 import shutil
 import subprocess
 from sys import platform as _plat
@@ -43,6 +42,7 @@ class GUI(wx.Frame):
         '''
         Create the $APP window, but do not load a project.
         '''
+
         self.CreateMenuBar()
         self.BuildStatusBar()
 
@@ -134,6 +134,16 @@ class GUI(wx.Frame):
         self.SetAutoLayout(True)
         self.SetSizer(vbox)
         self.Layout()
+
+        try:
+            import vlc
+        except:
+            dlg = wx.MessageDialog(self, 'Missing VLC library. You need to install VLC from http://videolan.org', 
+                '',wx.OK | wx.ICON_ERROR)
+            val = dlg.ShowModal()
+
+            if val == wx.ID_OK:
+                dlg.Destroy()
 
         #instatiate VLC
         self.Instance = vlc.Instance()
