@@ -306,14 +306,6 @@ class GUI(wx.Frame):
         #print(projpath)
         #print(self.imgdir)
 
-        try:
-            if len(self.POPLIST) > 0:
-                for item in self.POPLIST:
-                    shutil.copy2(os.path.join(self.clargs['project'],item), self.imgdir)#DEBUG
-                    #shutil.move(os.path.join(self.clargs['project'],item), self.imgdir)
-        except:
-            pass
-
         self.con = sq.connect(dbfile, isolation_level=None )
 
         self.cur = self.con.cursor()
@@ -323,20 +315,24 @@ class GUI(wx.Frame):
         #self.con.close()
         self.BindKeys(dbfile)
 
+        '''
+        # i like to write methods to import
+        # images and then not use them
+
         if len(self.POPLIST) > 0:
             for counter, item in enumerate( sorted(os.listdir(self.imgdir)) ):
                 self.cur.execute("INSERT INTO Project(Path, Name, timestamp) VALUES (?,?,?)", ("images", "Default Project", datetime.now() ))
                 self.cur.execute("INSERT INTO Project(Path, Name, timestamp) VALUES (?,?,?)", ("images", "Default Project", datetime.now() ))
                 self.cur.execute('INSERT INTO Timeline VALUES(?,?,?)', (counter,item,0))
-
-
+        '''
+        
         sb = self.GetStatusBar()
         stat = os.path.basename(projpath) + ' created'
         sb.SetStatusText(stat, 0)
         sb.SetStatusText('', 1)
         sd.Destroy()
 
-
+        
     def BuildTimeline(self,dbfile):
 
         for child in self.panel3.GetChildren():
@@ -378,9 +374,6 @@ class GUI(wx.Frame):
         self.panel3.Update()
 
         self.Refresh()
-
-        if self.POPLIST:
-            print('yes there are images. yes i should create a timeline.')
 
         '''
         # TODO: this sorta converts a dir of images to a timeline
@@ -708,7 +701,7 @@ class GUI(wx.Frame):
             self.sc_command = 'ffmpeg'
 
             if _plat.startswith('linux'):
-                P = subprocess.Popen(self.sc_command + " -r "+self.sc_fps+" -pattern_type glob -i '*.png' -b:v "+self.sc_bit+" -s " + self.sc_size + " -acodec NULL -y "+sc_out, cwd=self.imgdir, shell=True)
+                P = subprocess.Popen(self.sc_command + " -r "+self.sc_fps+" -pattern_type glob -i '*.png' -b:v "+self.sc_bit+" -s " + self.sc_size + " -acodec NULL -deinterlace -y "+sc_out, cwd=self.imgdir, shell=True)
                 
             elif _plat.startswith('darwin'):
                     pass
@@ -716,9 +709,7 @@ class GUI(wx.Frame):
             elif _plat.startswith('win'):
                 stnum  = int(os.listdir(self.imgdir)[0].split('.')[0])
                 aratio = int(''.join(n for n in self.sc_size if n.isdigit()))
-                P = subprocess.Popen(self.sc_command +' -f image2 -start_number ' + str(stnum) + ' -r '+self.sc_fps+' -s '+self.sc_size+' -i \"' + self.imgdir + '\%03d.png\" -b:v '+self.sc_bit+' -vf scale='+str(aratio)+':-1 -aspect 16:9 -acodec NULL -y '+sc_out, cwd=self.imgdir, shell=True)
-
-
+                P = subprocess.Popen(self.sc_command +' -f image2 -start_number ' + str(stnum) + ' -r '+self.sc_fps+' -s '+self.sc_size+' -i \"' + self.imgdir + '\%03d.png\" -b:v '+self.sc_bit+' -vf scale='+str(aratio)+':-1 -aspect 16:9 -acodec NULL -deinterlace -y '+sc_out, cwd=self.imgdir, shell=True)
 
             output = P.communicate()[0]
             print(P.returncode," Rendering complete!")
