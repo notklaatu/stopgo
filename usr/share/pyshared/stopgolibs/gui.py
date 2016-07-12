@@ -701,7 +701,7 @@ class GUI(wx.Frame):
             self.sc_command = 'ffmpeg'
 
             if _plat.startswith('linux'):
-                P = subprocess.Popen(self.sc_command + " -r "+self.sc_fps+" -pattern_type glob -i '*.png' -b:v "+self.sc_bit+" -s " + self.sc_size + " -acodec NULL -deinterlace -y "+sc_out, cwd=self.imgdir, shell=True)
+                P = subprocess.Popen(self.sc_command + " -r "+self.sc_fps+" -pattern_type glob -i '*.png' -b:v "+self.sc_bit+" -s " + self.sc_size + " -an -deinterlace -y "+sc_out, cwd=self.imgdir, shell=True)
                 
             elif _plat.startswith('darwin'):
                     pass
@@ -709,7 +709,7 @@ class GUI(wx.Frame):
             elif _plat.startswith('win'):
                 stnum  = int(os.listdir(self.imgdir)[0].split('.')[0])
                 aratio = int(''.join(n for n in self.sc_size if n.isdigit()))
-                P = subprocess.Popen(self.sc_command +' -f image2 -start_number ' + str(stnum) + ' -r '+self.sc_fps+' -s '+self.sc_size+' -i \"' + self.imgdir + '\%03d.png\" -b:v '+self.sc_bit+' -vf scale='+str(aratio)+':-1 -aspect 16:9 -acodec NULL -deinterlace -y '+sc_out, cwd=self.imgdir, shell=True)
+                P = subprocess.Popen(self.sc_command +' -f image2 -start_number ' + str(stnum) + ' -r '+self.sc_fps+' -s '+self.sc_size+' -i \"' + self.imgdir + '\%03d.png\" -b:v '+self.sc_bit+' -vf scale='+str(aratio)+':-1 -aspect 16:9 -an -deinterlace -y '+sc_out, cwd=self.imgdir, shell=True)
 
             output = P.communicate()[0]
             print(P.returncode," Rendering complete!")
