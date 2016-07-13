@@ -280,7 +280,6 @@ class GUI(wx.Frame):
         except OSError:
             dirname = os.path.expanduser('~')
         except:
-            # TODO: add a preference in which default save directory can be set
             dirname = os.path.join(os.path.expanduser('~'),self.myprefs['dir'])
 
             
@@ -315,17 +314,6 @@ class GUI(wx.Frame):
         self.cur.execute("INSERT INTO Project(Path, Name, timestamp) VALUES (?,?,?)", ("images", "StopGo Project", datetime.now() ))
         #self.con.close()
         self.BindKeys(dbfile)
-
-        '''
-        # i like to write methods to import
-        # images and then not use them
-
-        if len(self.POPLIST) > 0:
-            for counter, item in enumerate( sorted(os.listdir(self.imgdir)) ):
-                self.cur.execute("INSERT INTO Project(Path, Name, timestamp) VALUES (?,?,?)", ("images", "Default Project", datetime.now() ))
-                self.cur.execute("INSERT INTO Project(Path, Name, timestamp) VALUES (?,?,?)", ("images", "Default Project", datetime.now() ))
-                self.cur.execute('INSERT INTO Timeline VALUES(?,?,?)', (counter,item,0))
-        '''
         
         sb = self.GetStatusBar()
         stat = os.path.basename(projpath) + ' created'
@@ -375,17 +363,6 @@ class GUI(wx.Frame):
         self.panel3.Update()
 
         self.Refresh()
-
-        '''
-        # TODO: this sorta converts a dir of images to a timeline
-        for counter, item in enumerate( sorted(os.listdir('images')) ):
-            cur.execute("INSERT INTO Project(Path, Name, timestamp) VALUES (?,?,?)", ("images", "Default Project", datetime.now() ))
-            cur.execute("INSERT INTO Project(Path, Name, timestamp) VALUES (?,?,?)", ("images", "Default Project", datetime.now() ))
-            cur.execute('INSERT INTO Timeline VALUES(?,?,?)', (counter,item,0))
-        # TODO: if a sequence of DSC000X.JPG or whatever is provided
-        # then adapt project to use DSC000X as prefix for our snapshots
-
-        '''
 
     def OpenFile(self,e,filename):
 
