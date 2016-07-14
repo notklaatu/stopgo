@@ -22,7 +22,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
 
     info.SetIcon(wx.Icon(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','makerbox.png'), wx.BITMAP_TYPE_PNG))
     info.SetName('StopGo')
-    info.SetVersion('0.0.9')
+    info.SetVersion('VERSION_STRING')
     info.SetDescription(description)
     info.SetCopyright('(C) 2016 - 2016 Seth Kenlon')
     info.SetWebSite('http://www.makerbox.co.nz')
