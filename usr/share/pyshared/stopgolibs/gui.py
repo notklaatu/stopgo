@@ -155,10 +155,10 @@ class GUI(wx.Frame):
         #was stopgo started pointing at a project directory?
         if self.clargs.has_key('project'):
             self.WorkSpace(False)
-            print('DEBUG: project name was provided from shell')#DEBUG
+            #print('DEBUG: project name was provided from shell')#DEBUG
         else:
             #or was stopgo started with no directory?
-            print('DEBUG: no target dir provided.')#DEBUG
+            #print('DEBUG: no target dir provided.')#DEBUG
             self.start = startprompt.Choice(self, -1)
             
     def CreateMenuBar(self):
@@ -736,7 +736,7 @@ class GUI(wx.Frame):
             #print("ESCAPE", self.selected.GetName() )
             pass
         # delete
-        elif key==wx.WXK_BACK or key=='wx.WXK_BACK':
+        elif key==wx.WXK_BACK or key=='wx.WXK_BACK' or key=='wx.WXK_DELETE' or key=='wx.WXK_DELETE':
             try:
                 self.cur.execute("UPDATE Timeline SET Blackspot=? WHERE Image=?", (1, self.selected.GetName() )) 
                 self.cur.execute("SELECT * FROM Timeline WHERE Blackspot=1")
