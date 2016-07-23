@@ -16,7 +16,11 @@ import shutil
 import subprocess
 from sys import platform as _plat
 import sys
-
+try:
+    import vlc
+except:
+    STAT_VLC=1
+    
 USE_BUFFERED_DC = True
 ID_TIMER = 100
 
@@ -140,13 +144,21 @@ class GUI(wx.Frame):
         self.Layout()
 
         try:
-            import vlc
+            #instatiate VLC
+            self.Instance = vlc.Instance()
+            self.player = self.Instance.media_player_new()
         except:
-            dlg = wx.MessageDialog(self, 'Missing VLC library. You need to install VLC from http://videolan.org', 
-                '',wx.OK | wx.ICON_ERROR)
-            val = dlg.ShowModal()
-            if val == wx.ID_OK:
-                dlg.Destroy()
+            if STAT_VLC:
+                dlg = wx.MessageDialog(self, 'Missing a VLC Python library. You need to install VLC from http://videolan.org. Feel free to report this error to the developers.', '',wx.OK | wx.ICON_ERROR)
+                val = dlg.ShowModal()
+                if val == wx.ID_OK:
+                    dlg.Destroy()
+            else:
+                dlg = wx.MessageDialog(self, 'Missing VLC. You need to install VLC from http://videolan.org. Feel free to report this error to the developers.', '',wx.OK | wx.ICON_ERROR)
+                val = dlg.ShowModal()
+                if val == wx.ID_OK:
+                    dlg.Destroy()
+
 
         #instatiate VLC
         self.Instance = vlc.Instance()
@@ -201,7 +213,7 @@ class GUI(wx.Frame):
 
     def BindKeys(self,dbfile):
 
-        self.Bind(wx.EVT_MENU, lambda event, args=('wx.WXK_BACK',dbfile): self.OnKeyDown(event,args), self.ditem)
+        self.Bind(wx.EVT_MENU, lambda event, args=('MENU_DEL',dbfile): self.OnKeyDown(event,args), self.ditem)
         self.Bind(wx.EVT_MENU, lambda event, args=dbfile: self.Undo(event,args), self.zitem)
         self.Bind(wx.EVT_BUTTON, lambda event, args=('wx.WXK_SPACE',dbfile): self.OnKeyDown(event,args), self.bplay)
         self.Bind(wx.EVT_BUTTON, lambda event, args=(dbfile): self.CaptureCanvas(event,args), self.brec)
@@ -735,8 +747,27 @@ class GUI(wx.Frame):
         if  key==wx.WXK_ESCAPE:
             #print("ESCAPE", self.selected.GetName() )
             pass
+        elif key==wx.WXK_BACK or key=='wx.WXK_BACK':
+            try:
+                self.cur.execute("UPDATE Timeline SET Blackspot=? WHERE Image=?", (1, self.selected.GetName() )) 
+                self.cur.execute("SELECT * FROM Timeline WHERE Blackspot=1")
+                self.lastdel = self.selected.GetName()
+                #print(cur.fetchall())#DEBUG
+                self.con.commit()
+
+                self.selected.Destroy()
+                self.panel3.Freeze()
+                self.hbox2.Layout()
+                self.panel3.Refresh()
+                self.panel3.Update()
+                self.panel3.Thaw()
+
+            except:
+                #print("Nope, nothing is selected.")#DEBUG
+                pass
+
         # delete
-        elif key==wx.WXK_BACK or key=='wx.WXK_BACK' or key=='wx.WXK_DELETE' or key=='wx.WXK_DELETE':
+        elif key==wx.WXK_DELETE or key=='wx.WXK_DELETE' or key=='MENU_DEL':
             try:
                 self.cur.execute("UPDATE Timeline SET Blackspot=? WHERE Image=?", (1, self.selected.GetName() )) 
                 self.cur.execute("SELECT * FROM Timeline WHERE Blackspot=1")
