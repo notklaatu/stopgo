@@ -788,18 +788,22 @@ class GUI(wx.Frame):
 
         # play
         elif key==wx.WXK_SPACE or key=='wx.WXK_SPACE':
-            self.PrefProbe()
-            if self.prefdate == 1:
-                self.timer.Start(1000/int(self.sc_fps))
+            if self.timer.IsRunning():
+                self.timer.Stop()
+                self.blick = 0
             else:
-                self.timer.Start(1000/8)
+                self.PrefProbe()
+                if self.prefdate == 1:
+                    self.timer.Start(1000/int(self.sc_fps))
+                else:
+                    self.timer.Start(1000/8)
 
-            self.previous = 0
-            img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), 100)
-            self.selected.SetBitmap(wx.BitmapFromImage(img) )
+                self.previous = 0
+                img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), 100)
+                self.selected.SetBitmap(wx.BitmapFromImage(img) )
 
-            self.cur.execute("SELECT * FROM Timeline WHERE Blackspot==0")
-            self.framlist = self.cur.fetchall()
+                self.cur.execute("SELECT * FROM Timeline WHERE Blackspot==0")
+                self.framlist = self.cur.fetchall()
 
         #e.Skip()
 
@@ -807,10 +811,11 @@ class GUI(wx.Frame):
     def OnTimer(self,e):
         try:
             filepath = os.path.join(self.imgdir,self.framlist[self.blick][1])
+            #BUGBUG hardcoding res here makes no sense
             img = self.MakeThumbnail(filepath, 640)
             self.PaintCanvas(img)
             self.blick = self.blick + 1
-            #print(self.blick)#DEBUG
+            print(self.blick)#DEBUG
         except:
             #print('Timer Fail')#DEBUG
             self.timer.Stop()
