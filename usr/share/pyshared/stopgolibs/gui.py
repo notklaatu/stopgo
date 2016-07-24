@@ -73,17 +73,20 @@ class GUI(wx.Frame):
         vbox.Add(self.panel1, 4, wx.EXPAND | wx.ALIGN_CENTER)
 
         hbox1 = wx.BoxSizer(wx.VERTICAL)
-        panel2 = wx.Panel(self, size=(-1,50))
-        panel2.SetBackgroundColour("#d4d4d4")
-        hbox1.Add(panel2, flag=wx.RIGHT,border=8)
+        self.panel2 = wx.Panel(self, size=(-1,50))
+        self.panel2.SetBackgroundColour("#d4d4d4")
+        hbox1.Add(self.panel2, flag=wx.RIGHT,border=8)
         btnbox = wx.BoxSizer(wx.HORIZONTAL)
         self.Refresh()
         self.panel1.Refresh()
 
-        self.bplay = wx.Button(panel2, label='Play')
-        #bstop = wx.Button(panel2, label='Stop')
-        self.brec  = wx.Button(panel2, label='Capture')
-
+        self.bplayicon = wx.Image(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','play.png')).ConvertToBitmap()
+        self.bstopicon = wx.Image(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','stop.png')).ConvertToBitmap()
+        self.bplay = wx.BitmapButton(self.panel2, -1, self.bplayicon, pos=(10, 20), style=wx.NO_BORDER)
+        
+        brecicon = wx.Image(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','capture.png')).ConvertToBitmap()
+        self.brec = wx.BitmapButton(self.panel2, -1, brecicon, pos=(10, 20), style=wx.NO_BORDER)
+        
         camlist = []
         if _plat.startswith('linux'):
             for item in os.listdir('/dev'):
@@ -117,10 +120,10 @@ class GUI(wx.Frame):
 
 
         #print(type(camlist))#DEBUG
-        camcombo = wx.ComboBox(panel2, choices=camlist, style=wx.CB_READONLY)
+        camcombo = wx.ComboBox(self.panel2, choices=camlist, style=wx.CB_READONLY)
         camcombo.SetValue("Set Camera")
         camcombo.Bind(wx.EVT_COMBOBOX, lambda event, args=camcombo: self.OnCamSelect(event,args) )
-        panel2.Refresh()
+        self.panel2.Refresh()
         
         btnbox.Add(self.bplay, flag=wx.ALL, border=8 )
         #btnbox.Add(bstop, flag=wx.ALL, border=8 )
@@ -129,9 +132,9 @@ class GUI(wx.Frame):
         btnbox.AddStretchSpacer(1)
         btnbox.Add(camcombo, flag=wx.TOP,border=12)
 
-        panel2.SetSizer(btnbox)
+        self.panel2.SetSizer(btnbox)
         hbox1.Add(btnbox, flag=wx.EXPAND, border=0)
-        vbox.Add(panel2, 0, wx.EXPAND)
+        vbox.Add(self.panel2, 0, wx.EXPAND)
 
         self.hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         self.panel3 = wx.lib.scrolledpanel.ScrolledPanel(self)
@@ -577,7 +580,7 @@ class GUI(wx.Frame):
             #print('SELECTED DETECTED', self.framlog)#debug
             self.framlog = self.framlog
             # restore colour
-            img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), 100)
+            img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), self.thumbsize)
             self.selected.SetBitmap(wx.BitmapFromImage(img) )
             self.player.play()
         else:
@@ -802,6 +805,8 @@ class GUI(wx.Frame):
         elif key==wx.WXK_SPACE or key=='wx.WXK_SPACE':
             if self.timer.IsRunning():
                 self.timer.Stop()
+                self.bplay.SetBitmapLabel(self.bplayicon)
+                self.bplay.Refresh()
                 self.blick = 0
                 self.player.play()
             else:
@@ -822,20 +827,22 @@ class GUI(wx.Frame):
 
 
     def OnTimer(self,e):
+        self.bplay.SetBitmapLabel(self.bstopicon)
         try:
             #DEBUG print("selected is --> " + str(self.selected.GetName()) )
             filepath = os.path.join(self.imgdir,self.framlist[self.blick][1])
             #BUGBUG hardcoding res here makes no sense
-            img = self.MakeThumbnail(filepath, 640)
+            img = self.MakeThumbnail(filepath, self.screenWidth)#640
             self.PaintCanvas(img)
             self.blick = self.blick + 1
             print(self.blick)#DEBUG
         except:
             #print('Timer Fail')#DEBUG
             self.timer.Stop()
+            self.bplay.SetBitmapLabel(self.bplayicon)
             self.blick = 0
             self.player.play()
-
+        self.panel2.Refresh()
 
     def About(self,e):
         about.OnAboutBox(self)
