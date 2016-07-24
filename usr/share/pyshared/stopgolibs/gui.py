@@ -29,6 +29,7 @@ class GUI(wx.Frame):
         #First retrieve the screen size of the device
         self.screenSize = wx.DisplaySize()
         self.framlog = 0
+        self.thumbsize = 180
         self.camset = 0
         self.prefdate = 0
         #self.screenSize = [ 786, 768 ]
@@ -356,7 +357,7 @@ class GUI(wx.Frame):
         tbl_timeline = self.cur.execute("SELECT * FROM Timeline WHERE Blackspot=0")
 
         for entry in tbl_timeline:
-            img = self.MakeThumbnail(os.path.join(self.imgdir, entry[1]), 100)
+            img = self.MakeThumbnail(os.path.join(self.imgdir, entry[1]), self.thumbsize)
             self.imageCtrl = wx.StaticBitmap(self.panel3, wx.ID_ANY, 
                                              wx.BitmapFromImage(img),name=entry[1]) 
             self.imageCtrl.SetBitmap(wx.BitmapFromImage(img))
@@ -466,7 +467,7 @@ class GUI(wx.Frame):
 
         # give colour back to old selection
         try:
-            img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), 100)
+            img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), self.thumbsize)
             self.selected.SetBitmap(wx.BitmapFromImage(img) )
         except:
             pass
@@ -476,7 +477,7 @@ class GUI(wx.Frame):
         #print( self.selected )#debug
 
         # desaturate new selection
-        img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), 100)
+        img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), self.thumbsize + 3)
         self.selected.SetBitmap(wx.BitmapFromImage(img.ConvertToGreyscale()))
 
         self.startdrag = self.panel3.ScreenToClient( wx.GetMousePosition() )[0]
@@ -492,7 +493,7 @@ class GUI(wx.Frame):
 
         if diff == 0:
             if self.selected.GetId() == self.previous:
-                img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), 100)
+                img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), self.thumbsize)
                 self.selected.SetBitmap(wx.BitmapFromImage(img) )
                 self.player.play()
             else:
@@ -583,7 +584,7 @@ class GUI(wx.Frame):
             vidcap = vlc.libvlc_video_take_snapshot(self.player, 0, os.path.join(self.imgdir, str(self.framlog).zfill(3)+'.png'), 0,0)
             self.cur.execute('INSERT INTO Timeline VALUES(Null,?,?)', (str(self.framlog).zfill(3)+'.png',0))
             # add graphically to timeline
-            img = self.MakeThumbnail(os.path.join(self.imgdir, str(self.framlog).zfill(3)+'.png'), 100)
+            img = self.MakeThumbnail(os.path.join(self.imgdir, str(self.framlog).zfill(3)+'.png'), self.thumbsize)
             self.imageCtrl = wx.StaticBitmap(self.panel3, wx.ID_ANY, wx.BitmapFromImage(img),name=str(self.framlog).zfill(3)+'.png') 
             self.imageCtrl.SetBitmap(wx.BitmapFromImage(img))
             self.imageCtrl.Bind( wx.EVT_LEFT_DOWN, self.OnLeftClick )
@@ -592,7 +593,7 @@ class GUI(wx.Frame):
             self.hbox2.Add( self.imageCtrl, 0, wx.ALL, 5 )
 
             # scroll right 100% to get close to new frame
-            self.panel3.Scroll(100,0)
+            self.panel3.Scroll(self.thumbsize,0)
             self.Layout()
             # draw new frame
             self.hbox2.Layout()
@@ -791,6 +792,7 @@ class GUI(wx.Frame):
             if self.timer.IsRunning():
                 self.timer.Stop()
                 self.blick = 0
+                self.player.play()
             else:
                 self.PrefProbe()
                 if self.prefdate == 1:
@@ -799,17 +801,18 @@ class GUI(wx.Frame):
                     self.timer.Start(1000/8)
 
                 self.previous = 0
-                img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), 100)
+                img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), self.thumbsize)
                 self.selected.SetBitmap(wx.BitmapFromImage(img) )
 
                 self.cur.execute("SELECT * FROM Timeline WHERE Blackspot==0")
                 self.framlist = self.cur.fetchall()
-
+                self.TakeSnapshot('wx.WXK_SPACE',self.dbfile)
         #e.Skip()
 
 
     def OnTimer(self,e):
         try:
+            #DEBUG print("selected is --> " + str(self.selected.GetName()) )
             filepath = os.path.join(self.imgdir,self.framlist[self.blick][1])
             #BUGBUG hardcoding res here makes no sense
             img = self.MakeThumbnail(filepath, 640)
