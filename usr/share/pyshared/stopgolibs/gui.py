@@ -456,6 +456,7 @@ class GUI(wx.Frame):
             NewH = PhotoMaxSize
             NewW = PhotoMaxSize * W / H
         img = img.Scale(NewW,NewH)
+        imgb = wx.BitmapFromImage(img)
         return img
 
 
@@ -478,7 +479,18 @@ class GUI(wx.Frame):
 
         # desaturate new selection
         img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), self.thumbsize + 3)
-        self.selected.SetBitmap(wx.BitmapFromImage(img.ConvertToGreyscale()))
+        imgb = wx.BitmapFromImage(img)
+
+        dc = wx.MemoryDC(imgb)
+        #dc.DrawRectangle(10,10,20,20)
+        staricon = wx.Image(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','star.png') )
+        star = wx.BitmapFromImage(staricon)
+        dc.DrawBitmap(star,20,20)
+        dc.SelectObject(wx.NullBitmap)
+        del dc
+        control = wx.StaticBitmap(self, -1, imgb)
+        
+        self.selected.SetBitmap(imgb)
 
         self.startdrag = self.panel3.ScreenToClient( wx.GetMousePosition() )[0]
         self.origin = self.panel3.ScreenToClient( self.selected.GetPositionTuple() )[0]
