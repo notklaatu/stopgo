@@ -482,14 +482,13 @@ class GUI(wx.Frame):
         imgb = wx.BitmapFromImage(img)
 
         dc = wx.MemoryDC(imgb)
-        #dc.DrawRectangle(10,10,20,20)
-        staricon = wx.Image(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','star.png') )
+
+        staricon = wx.Image(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','select.png') )
         star = wx.BitmapFromImage(staricon)
-        dc.DrawBitmap(star,20,20)
+        dc.DrawBitmap(star,133,0)
         dc.SelectObject(wx.NullBitmap)
         del dc
         control = wx.StaticBitmap(self, -1, imgb)
-        
         self.selected.SetBitmap(imgb)
 
         self.startdrag = self.panel3.ScreenToClient( wx.GetMousePosition() )[0]
