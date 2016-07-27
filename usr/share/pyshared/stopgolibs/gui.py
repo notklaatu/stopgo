@@ -41,6 +41,7 @@ class GUI(wx.Frame):
         self.timer = wx.Timer(self, ID_TIMER)
         self.blick = 0
         self.Bind(wx.EVT_TIMER, self.OnTimer, id=ID_TIMER)
+        self.Bind(wx.EVT_CHAR_HOOK, lambda event, args=(True):self.OnKeyDown(event,args))
         self.clargs = clargs
         self.InitUI()
         
@@ -228,7 +229,7 @@ class GUI(wx.Frame):
         self.panel3.Bind(wx.EVT_LEFT_DOWN, self.OnMouseClick)
         self.Bind(wx.EVT_MENU, lambda event, args=(dbfile):self.OnQuit(event,args), self.qitem)
         self.Bind(wx.EVT_CLOSE, lambda event, args=(dbfile):self.OnQuit(event,args), self.qitem)
-        self.Bind(wx.EVT_MENU, lambda event, args=(dbfile): self.OnRender(event,args), self.ritem)
+        self.Bind(wx.EVT_MENU, lambda event, args=(dbfile):self.OnRender(event,args), self.ritem)
 
     def WorkSpace(self,e ):
         '''
@@ -758,7 +759,8 @@ class GUI(wx.Frame):
 
 
     def OnKeyDown(self, e, args):
-        #print('args --->', args)#DEBUG
+        print('args --->', args)#DEBUG
+        print('e --E>', e)#DEBUG
         if len(args) == 2:
             key = args[0]
             dbfile = args[1]
