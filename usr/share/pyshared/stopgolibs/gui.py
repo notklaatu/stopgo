@@ -841,13 +841,12 @@ class GUI(wx.Frame):
         try:
             #DEBUG print("selected is --> " + str(self.selected.GetName()) )
             filepath = os.path.join(self.imgdir,self.framlist[self.blick][1])
-            #BUGBUG hardcoding res here makes no sense
             img = self.MakeThumbnail(filepath, self.screenWidth)#640
             self.PaintCanvas(img)
             self.blick = self.blick + 1
             print(self.blick)#DEBUG
         except:
-            #print('Timer Fail')#DEBUG
+            print('Timer Fail')#DEBUG
             self.timer.Stop()
             self.bplay.SetBitmapLabel(self.bplayicon)
             self.blick = 0
