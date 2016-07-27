@@ -67,7 +67,7 @@ class GUI(wx.Frame):
         self.hbox.AddStretchSpacer(1)
         self.hbox.Add(self.viewport, proportion=0, flag=wx.ALIGN_CENTER, border=0)
         self.hbox.AddStretchSpacer(1)
-
+        self.Bind(wx.EVT_CHAR_HOOK, lambda event, args=(True): self.OnKeyDown(event, args))
         self.panel1.SetSizer(self.hbox)
 
         vbox.Add(self.panel1, 4, wx.EXPAND | wx.ALIGN_CENTER)
@@ -84,9 +84,11 @@ class GUI(wx.Frame):
         self.bstopicon = wx.Image(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','stop.png')).ConvertToBitmap()
         self.bplay = wx.BitmapButton(self.panel2, -1, self.bplayicon, pos=(10, 20), style=wx.NO_BORDER)
         
-        brecicon = wx.Image(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','capture.png')).ConvertToBitmap()
-        self.brec = wx.BitmapButton(self.panel2, -1, brecicon, pos=(10, 20), style=wx.NO_BORDER)
-        
+        self.brecicon = wx.Image(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','capture.png')).ConvertToBitmap()
+        self.brecxicon = wx.Image(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','capture.png')).ConvertToGreyscale().ConvertToBitmap()
+        self.brec = wx.BitmapButton(self.panel2, -1, self.brecicon, pos=(10, 20), style=wx.NO_BORDER)
+        self.bplayxicon = wx.Image(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','play.png')).ConvertToGreyscale().ConvertToBitmap()
+
         camlist = []
         if _plat.startswith('linux'):
             for item in os.listdir('/dev'):
@@ -228,7 +230,6 @@ class GUI(wx.Frame):
         self.Bind(wx.EVT_CLOSE, lambda event, args=(dbfile):self.OnQuit(event,args), self.qitem)
         self.Bind(wx.EVT_MENU, lambda event, args=(dbfile): self.OnRender(event,args), self.ritem)
 
-
     def WorkSpace(self,e ):
         '''
         Load in a project.
@@ -283,7 +284,7 @@ class GUI(wx.Frame):
             self.player.set_hwnd(self.viewport.GetHandle())
 
         self.player.play()
-
+        self.brec.SetBitmapLabel(self.brecicon)        
 
     def NewFile(self,e):
 
@@ -502,6 +503,7 @@ class GUI(wx.Frame):
     def OnLeftRelease( self,e):
 
         self.player.stop()
+        self.brec.SetBitmapLabel(self.brecxicon)
         enddrag       = self.panel3.ScreenToClient( wx.GetMousePosition() )[0]
         diff          = enddrag-self.startdrag
 
@@ -510,6 +512,7 @@ class GUI(wx.Frame):
                 img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), self.thumbsize)
                 self.selected.SetBitmap(wx.BitmapFromImage(img) )
                 self.player.play()
+                self.brec.SetBitmapLabel(self.brecicon)
             else:
                 img = self.MakeThumbnail(os.path.join( self.imgdir, self.selected.GetName() ), self.screenHeight)
                 self.GetStatusBar().SetStatusText(self.selected.GetName(), 0)
@@ -583,6 +586,7 @@ class GUI(wx.Frame):
             img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), self.thumbsize)
             self.selected.SetBitmap(wx.BitmapFromImage(img) )
             self.player.play()
+            self.brec.SetBitmapLabel(self.brecicon)
         else:
             #print('NO SELECT DETECT')
             self.TakeSnapshot(e,args)
@@ -628,7 +632,7 @@ class GUI(wx.Frame):
                 dlg.Destroy()
 
         self.player.play()
-
+        self.brec.SetBitmapLabel(self.brecicon)
 
     def SimpleQuit(self,e):
         '''
@@ -666,7 +670,8 @@ class GUI(wx.Frame):
     def OnRender(self,e,dbfile):
 
         self.PrefProbe()
-
+        self.brec.SetBitmapLabel(self.brecxicon)
+        self.bplay.SetBitmapLabel(self.bplayxicon)
         self.previous = 0
         wcd='All files(*)|*'
         directory = os.getcwd()
@@ -702,7 +707,7 @@ class GUI(wx.Frame):
             elif _plat.startswith('win'):
                 stnum  = int(os.listdir(self.imgdir)[0].split('.')[0])
                 aratio = int(''.join(n for n in self.sc_size if n.isdigit()))
-                P = subprocess.Popen(self.sc_command +' -f image2 -start_number ' + str(stnum) + ' -r '+self.sc_fps+' -s '+self.sc_size+' -i \"' + self.imgdir + '\%03d.png\" -b:v '+self.sc_bit+' -vf scale='+str(aratio)+':-1 -aspect 16:9 -an -deinterlace -y '+sc_out, cwd=self.imgdir, shell=True)
+                P = subprocess.Popen(self.sc_command +' -f image2 -start_number ' + str(stnum) + ' -r '+self.sc_fps+' -s '+self.sc_size+' -i \"' + self.imgdir + '\%03d.png\" -b:v '+self.sc_bit+' -vf scale='+str(aratio)+':-1 -aspect 16:9 -an -deinterlace -y -threads 2 '+sc_out, cwd=self.imgdir, shell=True)
 
             output = P.communicate()[0]
             print(P.returncode," Rendering complete!")
@@ -717,6 +722,9 @@ class GUI(wx.Frame):
 
             dlg.Destroy()
 
+            self.brec.SetBitmapLabel(self.brecicon)
+            self.bplay.SetBitmapLabel(self.bplayicon)
+            
         else:
             print('WIN CONFUSION')
             '''
@@ -806,9 +814,11 @@ class GUI(wx.Frame):
             if self.timer.IsRunning():
                 self.timer.Stop()
                 self.bplay.SetBitmapLabel(self.bplayicon)
+                self.brec.SetBitmapLabel(self.brecxicon)
                 self.bplay.Refresh()
                 self.blick = 0
                 self.player.play()
+                self.brec.SetBitmapLabel(self.brecicon)
             else:
                 self.PrefProbe()
                 if self.prefdate == 1:
@@ -842,6 +852,7 @@ class GUI(wx.Frame):
             self.bplay.SetBitmapLabel(self.bplayicon)
             self.blick = 0
             self.player.play()
+            self.brec.SetBitmapLabel(self.brecicon)
         self.panel2.Refresh()
 
     def About(self,e):
