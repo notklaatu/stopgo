@@ -4,6 +4,7 @@
 ## building packages to distribute.
 
 PKGDIR = stopgo.appdir
+DOCDIR = usr/doc
 PYTHON = python2.7
 VLC = thirdparty/linux/python_vlc-1.1.2-py2.7.egg
 WX  = wxPython-src-2.8.12.1.tar.bz2
@@ -31,12 +32,12 @@ help:
 	@echo "Assuming you're a developer:"
 	@echo
 	@echo "Please use 'make <target>' where <target> is one of..."
-	@echo "  download  download thirdparty libs for linux       "
-	@echo "  downwind  download thirdparty libs for windows     "
-	@echo "  all       make packages for all supported platforms"
-	@echo "  linux     make AppImage for Linux "
-	@echo "  windows   make an .exe for Windows"
-	@echo "  mac       make a package for OS X "
+	@echo "  download : download thirdparty libs for linux       "
+	@echo "  downwind : download thirdparty libs for windows     "
+#	@echo "  all      : make packages for all supported platforms"
+	@echo "  linux    : make AppImage for Linux "
+	@echo "  windows  : make an .exe for Windows"
+#	@echo "  mac      : make a package for OS X "
 
 
 all: linux windows mac
@@ -47,6 +48,10 @@ download:
 	@wget --no-clobber http://mirror.crucial.com.au/slackware/slackware-14.1/source/l/libjpeg/$(JPG) -P thirdparty/linux
 	@wget --no-clobber http://downloads.sourceforge.net/wxpython/$(WX) -P thirdparty/linux
 	@wget --no-clobber https://pypi.python.org/packages/2.7/p/python-vlc/$(VLC) -P thirdparty/linux
+	@git clone https://github.com/probonopd/AppImageKit.git thirdparty/AppImageKit.clone
+	@echo "If you just downloaded a fresh copy, you need to go compile wxPython now."
+	@echo "Complete!"
+
 
 downwind:
 	@echo 'Fetching thirdparty libraries for windows'
@@ -57,12 +62,13 @@ downwind:
 
 
 linux: $(VLC)
-	@sh ./genappdir.sh -a $(HOME)/bin/AppImageAssistant.AppDir/AppRun -i ./usr/share/icons/stopgo.png -d ./usr/share/applications/stopgo.desktop $(PKGDIR)
+	@gcc -w -o thirdparty/Apprun thirdparty/AppRun.c
+	@sh ./genappdir.sh -a thirdparty/AppRun -i ./usr/share/icons/stopgo.png -d ./usr/share/applications/stopgo.desktop $(PKGDIR)
 	@cp -rv ./usr $(PKGDIR)
 	@convert ./usr/share/icons/hicolor/scalable/stopgo.svg -size 256x256 $(PKGDIR)/usr/share/icons/stopgo.png
 	@convert ./usr/share/icons/hicolor/scalable/stopgo.svg -size 96x96 $(PKGDIR)/stopgo.png
-	@mkdir -p $(PKGDIR)/usr/docs/stopgo
-	@cp AUTHORS TODO COPYING $(PKGDIR)/usr/docs/stopgo
+	@mkdir -p $(PKGDIR)/$(DOCDIR)/stopgo
+	@cp AUTHORS TODO COPYING $(PKGDIR)/$(DOCDIR)/stopgo
 	@mkdir -p $(PKGDIR)/usr/$(LIB)/$(PYTHON)/site-packages/vlc
 	@echo "vlc" > $(PKGDIR)/usr/$(LIB)/$(PYTHON)/site-packages/vlc.pth
 	@unzip $(VLC) -d $(PKGDIR)/usr/$(LIB)/$(PYTHON)/site-packages/vlc/
