@@ -62,8 +62,8 @@ downwind:
 
 
 linux: $(VLC)
-	@gcc -w -o thirdparty/Apprun thirdparty/AppRun.c
-	@sh ./genappdir.sh -a thirdparty/AppRun -i ./usr/share/icons/stopgo.png -d ./usr/share/applications/stopgo.desktop $(PKGDIR)
+	@gcc -o thirdparty/AppRun thirdparty/AppRun.c
+	@sh ./genappdir.sh -a ./thirdparty/AppRun -i ./usr/share/icons/stopgo.png -d ./usr/share/applications/stopgo.desktop $(PKGDIR)
 	@cp -rv ./usr $(PKGDIR)
 	@convert ./usr/share/icons/hicolor/scalable/stopgo.svg -size 256x256 $(PKGDIR)/usr/share/icons/stopgo.png
 	@convert ./usr/share/icons/hicolor/scalable/stopgo.svg -size 96x96 $(PKGDIR)/stopgo.png
