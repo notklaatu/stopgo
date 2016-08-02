@@ -700,7 +700,7 @@ class GUI(wx.Frame):
             self.sc_command = 'ffmpeg'
 
             if _plat.startswith('linux'):
-                P = subprocess.Popen(self.sc_command + " -r "+self.sc_fps+" -pattern_type glob -i '*.png' -b:v "+self.sc_bit+" -s " + self.sc_size + " -an -deinterlace -y "+sc_out, cwd=self.imgdir, shell=True)
+                P = subprocess.Popen(self.sc_command + " -r "+self.sc_fps+" -pattern_type glob -i '*.png' -b:v "+self.sc_bit+" -s " + self.sc_size + " -an -pix_fmt yuv420p -deinterlace -y "+sc_out, cwd=self.imgdir, shell=True)
                 
             elif _plat.startswith('darwin'):
                     pass
@@ -708,7 +708,7 @@ class GUI(wx.Frame):
             elif _plat.startswith('win'):
                 stnum  = int(os.listdir(self.imgdir)[0].split('.')[0])
                 aratio = int(''.join(n for n in self.sc_size if n.isdigit()))
-                P = subprocess.Popen(self.sc_command +' -f image2 -start_number ' + str(stnum) + ' -r '+self.sc_fps+' -s '+self.sc_size+' -i \"' + self.imgdir + '\%03d.png\" -b:v '+self.sc_bit+' -vf scale='+str(aratio)+':-1 -aspect 16:9 -an -deinterlace -y -threads 2 '+sc_out, cwd=self.imgdir, shell=True)
+                P = subprocess.Popen(self.sc_command +' -f image2 -start_number ' + str(stnum) + ' -r '+self.sc_fps+' -s '+self.sc_size+' -i \"' + self.imgdir + '\%03d.png\" -b:v '+self.sc_bit+' -vf scale='+str(aratio)+':-1 -aspect 16:9 -an -pix_fmt yuv420p -deinterlace -y -threads 2 '+sc_out, cwd=self.imgdir, shell=True)
 
             output = P.communicate()[0]
             print(P.returncode," Rendering complete!")
@@ -889,7 +889,7 @@ class GUI(wx.Frame):
         # does config file exist
         if not os.path.isfile(os.path.join(os.path.expanduser("~"),'.config','stopgo.conf.json')):
             flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
-            defpref = '{"profile": "1080p", "bitrate": "21Mbps", "fps": "8", "encoder": "ffmpeg"}'
+            defpref = '{"profile": "1080p", "bitrate": "21Mbps", "fps": "8", "encoder": "ffmpeg", "dir": "Desktop" }'
             file_handle = os.open(os.path.join(os.path.expanduser("~"),'.config','stopgo.conf.json'), flags)
             with os.fdopen(file_handle, 'w') as file_obj:
                 file_obj.write(defpref)
