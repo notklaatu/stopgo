@@ -61,7 +61,7 @@ class GUI(wx.Frame):
         vbox  = wx.BoxSizer(wx.VERTICAL)
         self.panel1 = wx.Panel(self)
 
-        self.viewport = wx.Panel(self.panel1, wx.ID_ANY, size=(self.screenWidth,self.screenHeight/2))
+        self.viewport = wx.Panel(self.panel1, wx.ID_ANY, size=(self.screenWidth/2,self.screenHeight/2))
         self.panel1.SetBackgroundColour("#000000")
         self.panel1.Bind(wx.EVT_PAINT, self.OnPaint)
         self.viewport.SetBackgroundColour("#101010")
@@ -83,15 +83,17 @@ class GUI(wx.Frame):
         self.Refresh()
         self.panel1.Refresh()
 
+        #button states
         self.bplayicon = wx.Image(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','play.png')).ConvertToBitmap()
-        self.bstopicon = wx.Image(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','stop.png')).ConvertToBitmap()
-        self.bplay = wx.BitmapButton(self.panel2, -1, self.bplayicon, pos=(10, 20), style=wx.NO_BORDER)
-        
+        self.bstopicon = wx.Image(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','stop.png')).ConvertToBitmap()        
         self.brecicon = wx.Image(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','capture.png')).ConvertToBitmap()
         self.brecxicon = wx.Image(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','capture.png')).ConvertToGreyscale().ConvertToBitmap()
-        self.brec = wx.BitmapButton(self.panel2, -1, self.brecicon, pos=(10, 20), style=wx.NO_BORDER)
         self.bplayxicon = wx.Image(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','play.png')).ConvertToGreyscale().ConvertToBitmap()
 
+        # the buttons
+        self.brec = wx.BitmapButton(self.panel2, -1, self.brecxicon, pos=(10, 20), style=wx.NO_BORDER)
+        self.bplay = wx.BitmapButton(self.panel2, -1, self.bplayxicon, pos=(10, 20), style=wx.NO_BORDER)
+        
         camlist = []
         if _plat.startswith('linux'):
             for item in os.listdir('/dev'):
@@ -221,7 +223,9 @@ class GUI(wx.Frame):
         sb.SetStatusText("Ready")
 
     def BindKeys(self,dbfile):
-
+        '''
+        Bind keyboard shortcuts for application.
+        '''
         self.Bind(wx.EVT_MENU, lambda event, args=('MENU_DEL',dbfile): self.OnKeyDown(event,args), self.ditem)
         self.Bind(wx.EVT_MENU, lambda event, args=dbfile: self.Undo(event,args), self.zitem)
         self.Bind(wx.EVT_BUTTON, lambda event, args=('wx.WXK_SPACE',dbfile): self.OnKeyDown(event,args), self.bplay)
@@ -238,7 +242,7 @@ class GUI(wx.Frame):
         Load in a project.
         '''
 
-        print(self.clargs)#DEBUG
+        #print(self.clargs)#DEBUG
         dbfile = self.clargs['project']
 
         if not os.path.isfile(dbfile):
@@ -255,7 +259,9 @@ class GUI(wx.Frame):
                 dlg.Destroy()
         else:
             self.OpenFile(False,dbfile)
-
+            self.bplay.SetBitmapLabel(self.bplayicon)
+            self.panel2.Refresh()
+            
         #update timeline view
         self.Layout()
         self.panel3.SetFocus()
@@ -507,6 +513,7 @@ class GUI(wx.Frame):
 
         self.player.stop()
         self.brec.SetBitmapLabel(self.brecxicon)
+        self.bplay.SetBitmapLabel(self.bplayicon)
         enddrag       = self.panel3.ScreenToClient( wx.GetMousePosition() )[0]
         diff          = enddrag-self.startdrag
 
@@ -517,7 +524,7 @@ class GUI(wx.Frame):
                 self.player.play()
                 self.brec.SetBitmapLabel(self.brecicon)
             else:
-                img = self.MakeThumbnail(os.path.join( self.imgdir, self.selected.GetName() ), self.screenHeight)
+                img = self.MakeThumbnail(os.path.join( self.imgdir, self.selected.GetName() ), self.screenHeight*.9)
                 self.GetStatusBar().SetStatusText(self.selected.GetName(), 0)
                 self.PaintCanvas(img)
         elif diff > 0:
@@ -597,7 +604,7 @@ class GUI(wx.Frame):
 
     def TakeSnapshot(self,e,args):
 
-        print('CAPTURE')#DEBUG
+        #print('CAPTURE')#DEBUG
         if self.camset == 1:
             self.framlog += 1
 
@@ -845,7 +852,7 @@ class GUI(wx.Frame):
         try:
             #DEBUG print("selected is --> " + str(self.selected.GetName()) )
             filepath = os.path.join(self.imgdir,self.framlist[self.blick][1])
-            img = self.MakeThumbnail(filepath, self.screenWidth)#640
+            img = self.MakeThumbnail(filepath, self.screenWidth/2)#640
             self.PaintCanvas(img)
             self.blick = self.blick + 1
             print(self.blick)#DEBUG
@@ -864,7 +871,7 @@ class GUI(wx.Frame):
     def Pref(self,e):
         #print('prefs')
         self.PrefProbe()
-        pref.GUIPref(None, -1, 'Stopgo Preferences', (self.screenWidth, self.screenHeight), wx.DEFAULT_FRAME_STYLE)
+        pref.GUIPref(None, -1, 'Stopgo Preferences', (self.screenWidth/2, self.screenHeight/2), wx.DEFAULT_FRAME_STYLE)
         self.prefdate = 1
 
 
