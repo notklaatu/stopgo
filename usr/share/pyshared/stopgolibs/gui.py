@@ -33,8 +33,10 @@ class GUI(wx.Frame):
         self.camset = 0
         self.prefdate = 0
         #self.screenSize = [ 786, 768 ]
-        self.screenWidth = int(self.screenSize[0] / 3)
-        self.screenHeight = int(self.screenSize[1] / 1.5)
+        self.screenWidth = int(self.screenSize[0])
+        self.screenHeight = int(self.screenSize[1])
+        #self.screenWidth = int(self.screenSize[0] / 3)
+        #self.screenHeight = int(self.screenSize[1] / 1.5)
         self.previous = 0
         #fontsy = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FONT).GetPixelSize()        
         wx.Frame.__init__(self, parent, id, title, size=(self.screenWidth, self.screenHeight), style=wx.DEFAULT_FRAME_STYLE)
