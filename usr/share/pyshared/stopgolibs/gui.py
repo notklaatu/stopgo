@@ -37,6 +37,7 @@ class GUI(wx.Frame):
         self.screenHeight = int(self.screenSize[1])
         #self.screenWidth = int(self.screenSize[0] / 3)
         #self.screenHeight = int(self.screenSize[1] / 1.5)
+        self.hasSelected = False
         self.previous = 0
         #fontsy = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FONT).GetPixelSize()        
         wx.Frame.__init__(self, parent, id, title, size=(self.screenWidth, self.screenHeight), style=wx.DEFAULT_FRAME_STYLE)
@@ -479,73 +480,62 @@ class GUI(wx.Frame):
 
     def OnLeftClick(self,e):
 
-        # give colour back to old selection
-        try:
+        print("OnLeftClick")
+        if self.hasSelected:
+            # if selection exists, take badge from previous
             img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), self.thumbsize)
             self.selected.SetBitmap(wx.BitmapFromImage(img) )
-        except:
-            pass
+            if self.selected.GetId() == self.previous:
+                self.hasSelected  = True
+            else:
+                self.hasSelected  = False
+                
+    def OnLeftRelease(self,e):
 
-        # get new selection 
-        self.selected = e.GetEventObject()
-        #print( self.selected )#debug
-
-        # desaturate new selection
-        img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), self.thumbsize + 3)
-        imgb = wx.BitmapFromImage(img)
-
-        dc = wx.MemoryDC(imgb)
-
-        staricon = wx.Image(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','select.png') )
-        star = wx.BitmapFromImage(staricon)
-        dc.DrawBitmap(star,133,0)
-        dc.SelectObject(wx.NullBitmap)
-        del dc
-        control = wx.StaticBitmap(self, -1, imgb)
-        self.selected.SetBitmap(imgb)
-
-        self.startdrag = self.panel3.ScreenToClient( wx.GetMousePosition() )[0]
-        self.origin = self.panel3.ScreenToClient( self.selected.GetPositionTuple() )[0]
-        #print(self.startdrag)
-
-
-    def OnLeftRelease( self,e):
-
+        print("OnLeftRelease")
         self.player.stop()
         self.brec.SetBitmapLabel(self.brecxicon)
         self.bplay.SetBitmapLabel(self.bplayicon)
-        enddrag       = self.panel3.ScreenToClient( wx.GetMousePosition() )[0]
-        diff          = enddrag-self.startdrag
 
-        if diff == 0:
-            if self.selected.GetId() == self.previous:
+        if self.hasSelected:
+            print("has selected")
+            if not self.selected.GetId() == self.previous:
+                #deselect
+                print("OnLeftRelease",self.previous  )
                 img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), self.thumbsize)
                 self.selected.SetBitmap(wx.BitmapFromImage(img) )
-                self.player.play()
-                self.brec.SetBitmapLabel(self.brecicon)
-            else:
-                img = self.MakeThumbnail(os.path.join( self.imgdir, self.selected.GetName() ), self.screenHeight*.9)
-                self.GetStatusBar().SetStatusText(self.selected.GetName(), 0)
-                self.PaintCanvas(img)
-        elif diff > 0:
-            pass
-            #TODO: drag and drop reordering of frames
-            #print( selected.GetName() )
-            #print("mouse started at ", self.startdrag)
-            #print("mouse ended at ", enddrag)
-            #print("diff ", enddrag - self.startdrag )
-        elif diff < 0:
-            pass
-            #TODO: drag and drop reordering of frames
-            #print("MOVE LEFT")
-            #print("mouse started at ", self.startdrag)
-            #print("mouse ended at ", enddrag)
-            #print("diff ", enddrag - self.startdrag )
+                self.hasSelected = False
+            self.previous = 0
 
-        self.previous = self.selected.GetId()
+        if not self.hasSelected:
+            # no selection exists
+            # get new selection
+            print("no selection exists, making new one")
+            self.selected = e.GetEventObject()
+            # highlight new selection
+            img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), self.thumbsize + 3)
+            imgb = wx.BitmapFromImage(img)
+
+            dc = wx.MemoryDC(imgb)
+
+            staricon = wx.Image(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','select.png') )
+            star = wx.BitmapFromImage(staricon)
+            dc.DrawBitmap(star,133,0)
+            dc.SelectObject(wx.NullBitmap)
+            del dc
+            control = wx.StaticBitmap(self, -1, imgb)
+            self.selected.SetBitmap(imgb)
+            self.hasSelected = True
+            self.previous = self.selected.GetId()
+                            
+        #paint canvas
+        img = self.MakeThumbnail(os.path.join( self.imgdir, self.selected.GetName() ), self.screenHeight*.9)
+        self.GetStatusBar().SetStatusText(self.selected.GetName(), 0)
+        self.PaintCanvas(img)
+        print("canvas repaint")
+
         self.viewport.Refresh()
-
-
+            
     def OnPaint(self, event):
 
         if _plat.startswith('linux'):
