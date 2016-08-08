@@ -504,6 +504,7 @@ class GUI(wx.Frame):
             self.previous = 0
             self.player.play()
             self.viewport.Refresh()
+            self.brec.SetBitmapLabel(self.brecicon)
             
         if not self.hasSelected:
             # we clicked something new
