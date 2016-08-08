@@ -486,10 +486,10 @@ class GUI(wx.Frame):
             self.selected.SetBitmap(wx.BitmapFromImage(img) )
             if e.GetId() == self.previous:
                 self.hasSelected  = True
-                #self.previous = 0
             else:
                 self.hasSelected  = False
-        
+
+                
     def OnLeftRelease(self,e):
 
         self.player.stop()
@@ -497,25 +497,22 @@ class GUI(wx.Frame):
         self.bplay.SetBitmapLabel(self.bplayicon)
 
         if self.hasSelected:
-            #deselect
-            if self.selected.GetId() == self.previous:
-                print("waka waka")
+            #the frame selected was clicked
             img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), self.thumbsize)
             self.selected.SetBitmap(wx.BitmapFromImage(img) )
             self.hasSelected = True
             self.previous = 0
-
+            self.player.play()
+            self.viewport.Refresh()
+            
         if not self.hasSelected:
-            # no selection exists
+            # we clicked something new
             # get new selection
-            # print("no selection exists, making new one")
             self.selected = e.GetEventObject()
             # highlight new selection
             img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), self.thumbsize + 3)
             imgb = wx.BitmapFromImage(img)
-
             dc = wx.MemoryDC(imgb)
-
             staricon = wx.Image(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','select.png') )
             star = wx.BitmapFromImage(staricon)
             dc.DrawBitmap(star,133,0)
@@ -525,17 +522,14 @@ class GUI(wx.Frame):
             self.selected.SetBitmap(imgb)
             self.hasSelected = True
             self.previous = self.selected.GetId()
-                            
-        #paint canvas
-        img = self.MakeThumbnail(os.path.join( self.imgdir, self.selected.GetName() ), self.screenHeight*.9)
-        self.GetStatusBar().SetStatusText(self.selected.GetName(), 0)
-        self.PaintCanvas(img)
-        print("canvas repaint")
 
-        self.viewport.Refresh()
-        print("left rel end previous", self.previous)
-        print("left rel selected", self.selected.GetId())
-        
+            #paint canvas
+            img = self.MakeThumbnail(os.path.join( self.imgdir, self.selected.GetName() ), self.screenHeight*.9)
+            self.GetStatusBar().SetStatusText(self.selected.GetName(), 0)
+            self.PaintCanvas(img)
+
+            self.viewport.Refresh()
+            
     def OnPaint(self, event):
 
         if _plat.startswith('linux'):
