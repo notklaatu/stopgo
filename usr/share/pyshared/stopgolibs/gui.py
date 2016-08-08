@@ -480,37 +480,35 @@ class GUI(wx.Frame):
 
     def OnLeftClick(self,e):
 
-        print("OnLeftClick")
         if self.hasSelected:
             # if selection exists, take badge from previous
             img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), self.thumbsize)
             self.selected.SetBitmap(wx.BitmapFromImage(img) )
-            if self.selected.GetId() == self.previous:
+            if e.GetId() == self.previous:
                 self.hasSelected  = True
+                #self.previous = 0
             else:
                 self.hasSelected  = False
-                
+        
     def OnLeftRelease(self,e):
 
-        print("OnLeftRelease")
         self.player.stop()
         self.brec.SetBitmapLabel(self.brecxicon)
         self.bplay.SetBitmapLabel(self.bplayicon)
 
         if self.hasSelected:
-            print("has selected")
-            if not self.selected.GetId() == self.previous:
-                #deselect
-                print("OnLeftRelease",self.previous  )
-                img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), self.thumbsize)
-                self.selected.SetBitmap(wx.BitmapFromImage(img) )
-                self.hasSelected = False
+            #deselect
+            if self.selected.GetId() == self.previous:
+                print("waka waka")
+            img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), self.thumbsize)
+            self.selected.SetBitmap(wx.BitmapFromImage(img) )
+            self.hasSelected = True
             self.previous = 0
 
         if not self.hasSelected:
             # no selection exists
             # get new selection
-            print("no selection exists, making new one")
+            # print("no selection exists, making new one")
             self.selected = e.GetEventObject()
             # highlight new selection
             img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), self.thumbsize + 3)
@@ -535,7 +533,9 @@ class GUI(wx.Frame):
         print("canvas repaint")
 
         self.viewport.Refresh()
-            
+        print("left rel end previous", self.previous)
+        print("left rel selected", self.selected.GetId())
+        
     def OnPaint(self, event):
 
         if _plat.startswith('linux'):
