@@ -44,7 +44,7 @@ class GUI(wx.Frame):
         self.timer = wx.Timer(self, ID_TIMER)
         self.blick = 0
         self.Bind(wx.EVT_TIMER, self.OnTimer, id=ID_TIMER)
-        self.Bind(wx.EVT_CHAR_HOOK, lambda event, args=(True):self.OnKeyDown(event,args))
+        self.Bind(wx.EVT_CHAR_HOOK, lambda event, args=(True, ):self.OnKeyDown(event, args))
         self.clargs = clargs
         self.InitUI()
         
@@ -71,7 +71,7 @@ class GUI(wx.Frame):
         self.hbox.AddStretchSpacer(1)
         self.hbox.Add(self.viewport, proportion=0, flag=wx.ALIGN_CENTER, border=0)
         self.hbox.AddStretchSpacer(1)
-        self.Bind(wx.EVT_CHAR_HOOK, lambda event, args=(True): self.OnKeyDown(event, args))
+        self.Bind(wx.EVT_CHAR_HOOK, lambda event, args=(True, ): self.OnKeyDown(event, args))
         self.panel1.SetSizer(self.hbox)
 
         vbox.Add(self.panel1, 4, wx.EXPAND | wx.ALIGN_CENTER)
