@@ -308,7 +308,6 @@ class GUI(wx.Frame):
             dirname = os.path.expanduser('~')
         except:
             dirname = os.path.join(os.path.expanduser('~'),self.myprefs['dir'])
-
             
         sd = wx.FileDialog(self, message='Save file as...', 
             defaultDir=dirname, defaultFile='stopgo_project_' + str(destid),
@@ -594,7 +593,8 @@ class GUI(wx.Frame):
             self.framlog += 1
 
             #print(self.camhero)#DEBUG
-            vidcap = vlc.libvlc_video_take_snapshot(self.player, 0, os.path.join(self.imgdir, str(self.framlog).zfill(3)+'.png'), 0,0)
+            vidcap = vlc.libvlc_video_take_snapshot(self.player,0,os.path.join(self.imgdir, str(self.framlog).zfill(3)+'.png'),0,0)
+            print(vidcap)
             self.cur.execute('INSERT INTO Timeline VALUES(Null,?,?)', (str(self.framlog).zfill(3)+'.png',0))
             # add graphically to timeline
             img = self.MakeThumbnail(os.path.join(self.imgdir, str(self.framlog).zfill(3)+'.png'), self.thumbsize)
@@ -691,18 +691,16 @@ class GUI(wx.Frame):
             sb.SetStatusText('Rendering...', 0)
             sb.Refresh()
 
-            self.sc_command = 'ffmpeg'
-
             if _plat.startswith('linux'):
-                P = subprocess.Popen(self.sc_command + " -r "+self.sc_fps+" -pattern_type glob -i '*.png' -b:v "+self.sc_bit+" -s " + self.sc_size + " -an -pix_fmt yuv420p -deinterlace -y "+sc_out, cwd=self.imgdir, shell=True)
+                P = subprocess.Popen(self.myprefs['encoder'] + " -r "+self.myprefs['fps']+" -pattern_type glob -i '*.png' -b:v "+self.myprefs['bitrate']+" -s " + self.myprefs['profile'] + " -an -pix_fmt yuv420p -deinterlace -y "+sc_out+'.'+self.myprefs['container'], cwd=self.imgdir, shell=True)
                 
             elif _plat.startswith('darwin'):
                     pass
 
             elif _plat.startswith('win'):
                 stnum  = int(os.listdir(self.imgdir)[0].split('.')[0])
-                aratio = int(''.join(n for n in self.sc_size if n.isdigit()))
-                P = subprocess.Popen(self.sc_command +' -f image2 -start_number ' + str(stnum) + ' -r '+self.sc_fps+' -s '+self.sc_size+' -i \"' + self.imgdir + '\%03d.png\" -b:v '+self.sc_bit+' -vf scale='+str(aratio)+':-1 -aspect 16:9 -an -pix_fmt yuv420p -deinterlace -y -threads 2 '+sc_out, cwd=self.imgdir, shell=True)
+                aratio = int(''.join(n for n in self.myprefs['profile'] if n.isdigit()))
+                P = subprocess.Popen(self.myprefs['encoder'] +' -f image2 -start_number ' + str(stnum) + ' -r '+self.myprefs['fps']+' -s '+self.myprefs['profile']+' -i \"' + self.imgdir + '\%03d.png\" -b:v '+self.myprefs['bitrate']+' -vf scale='+str(aratio)+':-1 -aspect 16:9 -an -pix_fmt yuv420p -deinterlace -y -threads 2 '+sc_out+'.'+self.myprefs['container'], cwd=self.imgdir, shell=True)
 
             output = P.communicate()[0]
             print(P.returncode," Rendering complete!")
@@ -818,7 +816,7 @@ class GUI(wx.Frame):
             else:
                 self.PrefProbe()
                 if self.prefdate == 1:
-                    self.timer.Start(1000/int(self.sc_fps))
+                    self.timer.Start(1000/int(self.myprefs['fps']))
                 else:
                     self.timer.Start(1000/8)
 
@@ -873,6 +871,14 @@ class GUI(wx.Frame):
 
         self.BuildTimeline(dbfile)
 
+    def PrefDef(self):
+        flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
+        defpref = '{"profile": "1080p", "container": "mp4","bitrate": "21Mbps", "fps": "8", "encoder": "ffmpeg", "dir": "Desktop" }'
+        file_handle = os.open(os.path.join(os.path.expanduser("~"),'.config','stopgo.conf.json'), flags)
+        with os.fdopen(file_handle, 'w') as file_obj:
+            file_obj.write(defpref)
+            file_obj.close()
+                
     def PrefProbe(self):
         # on windows this path may not exist
         if not os.path.exists(os.path.join(os.path.expanduser("~"), '.config')):
@@ -882,35 +888,17 @@ class GUI(wx.Frame):
 
         # does config file exist
         if not os.path.isfile(os.path.join(os.path.expanduser("~"),'.config','stopgo.conf.json')):
-            flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
-            defpref = '{"profile": "1080p", "bitrate": "21Mbps", "fps": "8", "encoder": "ffmpeg", "dir": "Desktop" }'
-            file_handle = os.open(os.path.join(os.path.expanduser("~"),'.config','stopgo.conf.json'), flags)
-            with os.fdopen(file_handle, 'w') as file_obj:
-                file_obj.write(defpref)
-                file_obj.close()
+            self.PrefDef
         else:
             #it already exists
             pass
 
-        dosiero = open(os.path.join(os.path.expanduser("~"), '.config', 'stopgo.conf.json'), 'r')
-        self.myprefs = json.load(dosiero)
-        self.sc_command = self.myprefs['encoder']
-
-        self.sc_fps     = self.myprefs['fps']
-
-        if self.myprefs['profile'] == '1080p':
-            self.sc_size = 'hd1080'
-        elif self.myprefs['profile'] == '720p':
-            self.sc_size = 'hd720'
-
-        if self.myprefs['bitrate'] == '7Mbps':
-            self.sc_bit = '7000k'
-        elif self.myprefs['bitrate'] == '14Mbps':
-            self.sc_bit = '14000k'
-        else:
-            self.sc_bit = '21000k'
-
-
+        try:
+            dosiero = open(os.path.join(os.path.expanduser("~"), '.config', 'stopgo.conf.json'), 'r')
+            self.myprefs = json.load(dosiero)
+        except:
+            self.PrefDef
+            
     def UndoHistory(self,e):
         # TODO: accidentally removed frames?
         # use this UNDO function to create window listing all BLACKSPOT frames

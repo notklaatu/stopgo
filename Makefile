@@ -10,6 +10,7 @@ VLC = thirdparty/linux/python_vlc-1.1.2-py2.7.egg
 WX  = wxPython-src-2.8.12.1.tar.bz2
 PNG = libpng-1.4.12.tar.xz
 JPG = jpegsrc.v8a.tar.xz
+CURVER := $(shell git describe --tags --exact-match --abbrev=0)
 
 # define arch for thirdpartylibs
 LBITS := $(shell getconf LONG_BIT)
@@ -26,6 +27,8 @@ endif
 #	jbigkit-libs-2.0-11.el7.$(ARCH)
 #osrc  := $(foreach item,$(onepm),thirdparty/$(item).rpm )
 
+.PHONY: clean release echo
+
 help:
 	@echo
 	@echo "This is used by developers building packages to distribute."
@@ -39,8 +42,15 @@ help:
 	@echo "  windows  : make an .exe for Windows"
 #	@echo "  mac      : make a package for OS X "
 
-
 all: linux windows mac
+
+release:
+	#(util/version.sh $(version)) || true
+	@sed 's/'$(CURVER)'/'$(version)'/' usr/share/pyshared/stopgolibs/about.py || exit "version string replacement failure"
+	@git tag $(version)
+
+echo:
+	@echo "Version updated to $(version)"
 
 download:
 	@echo 'Fetching thirdparty libraries'
@@ -52,14 +62,12 @@ download:
 	@echo "If you just downloaded a fresh copy, you need to go compile wxPython now."
 	@echo "Complete!"
 
-
 downwind:
 	@echo 'Fetching thirdparty libraries for windows'
 	@wget --no-clobber https://bootstrap.pypa.io/ez_setup.py -P thirdparty/windows/
 	@wget --no-clobber "http://iweb.dl.sourceforge.net/project/nsis/NSIS 2/2.50/nsis-2.50-setup.exe" -P thirdparty/windows/
 	@wget --no-clobber https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi -P thirdparty/windows/
 	@wget --no-clobber http://iweb.dl.sourceforge.net/project/wxpython/wxPython/3.0.2.0/wxPython3.0-win32-3.0.2.0-py27.exe -P thirdparty/windows/
-
 
 linux: $(VLC)
 	@gcc -o thirdparty/AppRun thirdparty/AppRun.c
@@ -77,7 +85,6 @@ linux: $(VLC)
 	@find $(PKGDIR)/usr/lib64/ -type f -exec sed -i -e 's|././/bin/env|/usr/bin/env|g' {} \;
 	@find $(PKGDIR)/usr/lib64/ -type f -exec sed -i -e 's|././/bin/python|/usr/bin/python|g' {} \;
 	@$(HOME)/bin/AppImageAssistant.AppDir/package $(PKGDIR) stopgo.AppImage
-
 
 mac:
 	@echo "Support coming soon-ish."

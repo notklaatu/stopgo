@@ -24,7 +24,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
     info.SetName('StopGo')
     info.SetVersion('VERSION_STRING')
     info.SetDescription(description)
-    info.SetCopyright('(C) 2016 - 2016 Seth Kenlon')
+    info.SetCopyright('(C) 2016 - 2017 Seth Kenlon')
     info.SetWebSite('http://www.makerbox.co.nz')
     info.SetLicence(licence)
     info.AddDeveloper('Klaatu, Seth Kenlon, Jess Weichler')
