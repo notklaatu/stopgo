@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+  <id>stopgo.desktop</id>
+  <pkgname>stopgo</pkgname>
+  <name>StopGo</name>
+  <summary>Create stop motion animation</summary>
+  <developer_name>MakerBox.org.nz</developer_name>
+  <description>
+  <p>
+    StopGo provides an interface for creating stop motion animation,
+    deleting errant frames, and exporting the animation as a movie at
+    a variety of frame rates.
+  </p>
+  <p>
+    StopGo is used in MakerBox animation classes. It is open source,
+    and written in Python so that its code is easy to understand and
+    modify..
+  </p>
+</description>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPLv3</project_license>
+  <url type="bugtracker">https://github.com/notklaatu/stopgo/issues</url>
+  <url type="donation">https://my.fsf.org/donate</url>
+  <url type="help">http://makerbox.org.nz/stopgo-quickstart/</url>
+  <url type="homepage">http://www.makerbox.org.nz/stopgo</url>
+  <screenshots>
+    <screenshot type="default">
+      <caption>StopGo interface</caption>
+      <image height="845" width="768">http://makerbox.org.nz/wp-content/uploads/2015/07/interface-768x845.png</image>
+    </screenshot>
+  </screenshots>
+</component>
