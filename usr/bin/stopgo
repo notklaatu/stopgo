@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # StopGo by MakeBox 
-# copyright 2016 by Seth Kenlon
-# copyleft  2016 by Klaatu
+# copyright 2016-7 by Seth Kenlon
+# copyleft  2016-7 by Klaatu
 #
 # THIS FILE IS PART OF STOPGO AND LICENSED UNDER THE GPLv3. SEE
 # 'COPYING' FILE FOR DETAILS. TL;DR YOU ARE AT LIBERTY TO SHARE
@@ -31,6 +31,7 @@ for dirpath in sys.path:
         if d in os.listdir(dirpath):
             #print "Running from installation..."
             modules_path = dirpath + '/' + d
+            print("EXCEPTIONEE ---------------")
     except:
         pass
 

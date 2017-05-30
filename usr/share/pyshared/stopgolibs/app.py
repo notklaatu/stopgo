@@ -15,6 +15,7 @@ def getOptions():
     parser.add_argument("project",nargs="?")
     parser.add_argument("-c", "--config",nargs="?",dest='config',
                         help="Optional path to a non-default config file.")
+    parser.add_argument("-d", "--debug",dest='debug',action='store_true',help="Run in debug mode.")
     parser.add_argument("-s", "--shell",dest='shell',action='store_true',help="Keep it in the shell. Do not launch the GUI.")
     parser.add_argument("-m", "--make-project",nargs="?",dest='make',
                         help="Path to a directory of sequential images to load as if it were a StopGo project.")

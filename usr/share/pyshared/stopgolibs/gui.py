@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import wx
 import wx.lib.scrolledpanel
+import six
 import os
 import sqlite3 as sq
 from datetime import datetime, date
@@ -16,6 +17,9 @@ import shutil
 import subprocess
 from sys import platform as _plat
 import sys
+import logging
+import logging.handlers
+
 try:
     import vlc
 except:
@@ -26,12 +30,27 @@ ID_TIMER = 100
 
 class GUI(wx.Frame):
     def __init__(self, parent, id, title, style, clargs):
+        HANDLER = logging.handlers.WatchedFileHandler(os.environ.get("LOGFILE", os.path.join(os.path.expanduser('~'), 'stopgo.log')))
+        FORMATTER = logging.Formatter(logging.BASIC_FORMAT)
+        HANDLER.setFormatter(FORMATTER)
+
+        if clargs.has_key('debug'):
+            root = logging.getLogger()
+            root.setLevel(os.environ.get("LOGLEVEL", "INFO"))
+            root.addHandler(HANDLER)
+
+        logging.exception("Debugging on.")
         #First retrieve the screen size of the device
         self.screenSize = wx.DisplaySize()
         self.framlog = 0
         self.thumbsize = 180
         self.camset = 0
         self.prefdate = 0
+        prefstr = pref.PrefProbe().PrefGet()
+        logging.exception(prefstr)
+        logging.exception(type(prefstr))
+        self.myprefs = prefstr
+        #self.myprefs = json.dumps(prefstr, sort_keys=True)
         #self.screenSize = [ 786, 768 ]
         self.screenWidth = int(self.screenSize[0])
         self.screenHeight = int(self.screenSize[1])
@@ -46,16 +65,13 @@ class GUI(wx.Frame):
         self.Bind(wx.EVT_TIMER, self.OnTimer, id=ID_TIMER)
         self.Bind(wx.EVT_CHAR_HOOK, lambda event, args=(True, ):self.OnKeyDown(event, args))
         self.clargs = clargs
+        logging.exception(prefstr)
         self.InitUI()
         
     def InitUI(self):
         '''
         Create the $APP window, but do not load a project.
         '''
-
-        #gather prefs
-        self.PrefProbe()
-
         self.CreateMenuBar()
         self.BuildStatusBar()
 
@@ -104,14 +120,14 @@ class GUI(wx.Frame):
             pass
         elif _plat.startswith('win'):
             import re
-            print('enumerating cameras')
+            logging.exception('Enumerating cameras.')
             # probe for cams
             ffproc = subprocess.Popen(['ffmpeg','-list_devices','true','-f','dshow','-i','dummy','-hide_banner'],stderr=subprocess.PIPE)
             # get a hackedtogether [list] of ffmpeg dshow output
             ffraw = ffproc.stderr.read().split(']')
             c = 0
             n = 1
-            print(c)
+            logging.exception(c)
             while (c < len(filter(lambda x:re.search(r'\ \ +\".*\"', x), ffraw))):
                 additem = filter(lambda x:re.search(r'\ \ +\".*\"', x), ffraw)[0].split('"')[1]
                 if additem in camlist:
@@ -122,7 +138,7 @@ class GUI(wx.Frame):
                     camlist.append(additem)
                     c = c+1
                 else:
-                    print('could not add enumerated item')
+                    logging.exception('Could not add enumerated item.')
                     c = c+1
                 #camlist.append('camera #' + str(c) )
 
@@ -178,11 +194,16 @@ class GUI(wx.Frame):
 
         #was stopgo started pointing at a project directory?
         if self.clargs.has_key('project'):
+            logging.exception('Shell set to no prompt.')
             self.WorkSpace(False)
-            #print('DEBUG: project name was provided from shell')#DEBUG
+        elif self.myprefs.has_key('prompt') and self.myprefs['prompt'] == 'No prompt':
+            logging.exception('Preferences set to no prompt.')
+            #self.NewFile(True)
+            pass
         else:
+            logging.exception('DEBUG: project name was provided from shell.')
             #or was stopgo started with no directory?
-            #print('DEBUG: no target dir provided.')#DEBUG
+            logging.exception('DEBUG: no target dir provided.')
             self.start = startprompt.Choice(self, -1)
             
     def CreateMenuBar(self):
@@ -243,13 +264,12 @@ class GUI(wx.Frame):
         Load in a project.
         '''
 
-        #print(self.clargs)#DEBUG
+        logging.exception(self.clargs)
         dbfile = self.clargs['project']
 
         if not os.path.isfile(dbfile):
             dlg = wx.MessageDialog(self, 'Project not found. Browse for the file?', 
-                                   '',wx.YES_NO | wx.YES_DEFAULT 
-                | wx.CANCEL | wx.ICON_QUESTION)
+                '',wx.YES_NO | wx.YES_DEFAULT | wx.CANCEL | wx.ICON_QUESTION)
 
             val = dlg.ShowModal()
 
@@ -271,7 +291,7 @@ class GUI(wx.Frame):
     def OnCamSelect(self,e,camcombo):
         self.player.stop()
         self.camhero = camcombo.GetCurrentSelection()
-        #print(self.camhero)#DEBUG
+        logging.exception(self.camhero)
         self.camset = 1
 
         if _plat.startswith('linux'):
@@ -279,7 +299,7 @@ class GUI(wx.Frame):
         elif _plat.startswith('darwin'):
             pass
         elif _plat.startswith('win'):
-            #print(self.camhero)#DEBUG
+            logging.exception(self.camhero)
             #self.Media = self.Instance.media_new("dshow:// #" + str(self.camhero))
             self.Media = self.Instance.media_new(u"dshow:// :dshow-vdev=" + unicode(camcombo.GetStringSelection()) + " :dshow-adev=none")
 
@@ -328,9 +348,9 @@ class GUI(wx.Frame):
 
         dbfile = projpath
         self.imgdir = os.path.join(os.path.dirname(projpath), 'images')
-        #print(dbfile)
-        #print(projpath)
-        #print(self.imgdir)
+        logging.exception(dbfile)
+        logging.exception(projpath)
+        logging.exception(self.imgdir)
 
         self.con = sq.connect(dbfile, isolation_level=None )
 
@@ -351,7 +371,7 @@ class GUI(wx.Frame):
     def BuildTimeline(self,dbfile):
 
         for child in self.panel3.GetChildren():
-            #print(child)#DEBUG
+            logging.exception(child)
             child.Destroy()
 
         # the last frame is
@@ -361,9 +381,9 @@ class GUI(wx.Frame):
             for entry in latestfram:
                 self.framlog = int(entry[1].split('.')[0])
                 self.framlog += 1
-                #print(self.framlog) #DEBUG
+                logging.exception(self.framlog)
         except:
-            print('looking for last frame but did not find')
+            logging.exception('Looking for last frame but did not find.')
             pass
 
         # timeline contains
@@ -377,7 +397,7 @@ class GUI(wx.Frame):
             self.imageCtrl.Bind( wx.EVT_LEFT_DOWN, self.OnLeftClick )
             self.imageCtrl.Bind( wx.EVT_LEFT_UP, self.OnLeftRelease )
 
-            #print(self.imageCtrl.GetId())#DEBUG
+            logging.exception(self.imageCtrl.GetId() )
             self.hbox2.Add( self.imageCtrl, 0, wx.ALL, 5 )
 
         self.Layout()
@@ -412,7 +432,7 @@ class GUI(wx.Frame):
         else:
             dbfile = filename
             self.imgdir = os.path.join( os.path.dirname(filename),'images')
-            #print("your image dir is ", self.imgdir )#DEBUG
+            logging.exception("Image dir is ", self.imgdir)
 
         self.con = sq.connect(dbfile, isolation_level=None )
 
@@ -474,7 +494,7 @@ class GUI(wx.Frame):
 
 
     def OnMouseClick(self,e):
-        print('panel3 clicked')#debug
+        logging.exception('panel3 clicked.')
         self.selected = 0
 
     def OnLeftClick(self,e):
@@ -547,7 +567,7 @@ class GUI(wx.Frame):
 
 
     def OnionSkin(self,img):
-        #print('onion skin') #DEBUG
+        logging.exception('onion skin')
 
         try:
             self.player.video_set_marquee_int(vlc.VideoMarqueeOption.Enable, 1)
@@ -571,10 +591,10 @@ class GUI(wx.Frame):
 
     def CaptureCanvas(self,e,args):
         playstat = str(self.player.get_state())
-        #print(playstat)
+        logging.exception(playstat)
 
         if not playstat == "State.Playing":
-            #print('SELECTED DETECTED', self.framlog)#debug
+            logging.exception('SELECTED DETECTED', self.framlog)
             self.framlog = self.framlog
             # restore colour
             img = self.MakeThumbnail(os.path.join(self.imgdir, self.selected.GetName() ), self.thumbsize)
@@ -582,19 +602,18 @@ class GUI(wx.Frame):
             self.player.play()
             self.brec.SetBitmapLabel(self.brecicon)
         else:
-            #print('NO SELECT DETECT')
+            logging.exception('NO SELECT DETECT')
             self.TakeSnapshot(e,args)
 
 
     def TakeSnapshot(self,e,args):
 
-        #print('CAPTURE')#DEBUG
+        logging.exception('CAPTURE')
         if self.camset == 1:
             self.framlog += 1
 
             #print(self.camhero)#DEBUG
             vidcap = vlc.libvlc_video_take_snapshot(self.player,0,os.path.join(self.imgdir, str(self.framlog).zfill(3)+'.png'),0,0)
-            print(vidcap)
             self.cur.execute('INSERT INTO Timeline VALUES(Null,?,?)', (str(self.framlog).zfill(3)+'.png',0))
             # add graphically to timeline
             img = self.MakeThumbnail(os.path.join(self.imgdir, str(self.framlog).zfill(3)+'.png'), self.thumbsize)
@@ -602,7 +621,7 @@ class GUI(wx.Frame):
             self.imageCtrl.SetBitmap(wx.BitmapFromImage(img))
             self.imageCtrl.Bind( wx.EVT_LEFT_DOWN, self.OnLeftClick )
             self.imageCtrl.Bind( wx.EVT_LEFT_UP, self.OnLeftRelease )
-            #print(self.imageCtrl.GetId())#DEBUG
+            logging.exception(self.imageCtrl.GetId() )
             self.hbox2.Add( self.imageCtrl, 0, wx.ALL, 5 )
 
             # scroll right 100% to get close to new frame
@@ -616,7 +635,7 @@ class GUI(wx.Frame):
             # send the shot to onion skin
             img = os.path.join(self.imgdir, str(self.framlog).zfill(3)+'.png')
             self.OnionSkin(img)
-            #print(self.framlog)
+            logging.exception(self.framlog)
 
         else:
             dlg = wx.MessageDialog(self, 'Please select your camera first.','',wx.OK | wx.ICON_ERROR)
@@ -664,7 +683,6 @@ class GUI(wx.Frame):
 
     def OnRender(self,e,dbfile):
 
-        self.PrefProbe()
         self.brec.SetBitmapLabel(self.brecxicon)
         self.bplay.SetBitmapLabel(self.bplayxicon)
         self.previous = 0
@@ -730,7 +748,7 @@ class GUI(wx.Frame):
             '''
 
     def onBusy(self,msf):
-        # implement a better gauge of render time
+        # TODO: implement a better gauge of render time
         #proggy.Tormato(self,-1)
         pass
 
@@ -751,25 +769,24 @@ class GUI(wx.Frame):
 
 
     def OnKeyDown(self, e, args):
-        print('args --->', args)#DEBUG
-        print('e --E>', e)#DEBUG
+        logging.exception('args --->', args)
         if len(args) == 2:
             key = args[0]
             dbfile = args[1]
         else:
             key = e.GetKeyCode()
             dbfile = args
-            #print(dbfile)#DEBUG
+            logging.exception(dbfile)
 
         if  key==wx.WXK_ESCAPE:
-            #print("ESCAPE", self.selected.GetName() )
+            logging.exception("ESCAPE", self.selected.GetName() )
             pass
         elif key==wx.WXK_BACK or key=='wx.WXK_BACK':
             try:
                 self.cur.execute("UPDATE Timeline SET Blackspot=? WHERE Image=?", (1, self.selected.GetName() )) 
                 self.cur.execute("SELECT * FROM Timeline WHERE Blackspot=1")
                 self.lastdel = self.selected.GetName()
-                #print(cur.fetchall())#DEBUG
+                logging.exception(cur.fetchall() )
                 self.con.commit()
 
                 self.selected.Destroy()
@@ -800,7 +817,7 @@ class GUI(wx.Frame):
                 self.panel3.Thaw()
 
             except:
-                #print("Nope, nothing is selected.")#DEBUG
+                logging.exception("EXCEPT: Nope, nothing is selected.")
                 pass
 
         # play
@@ -814,7 +831,6 @@ class GUI(wx.Frame):
                 self.player.play()
                 self.brec.SetBitmapLabel(self.brecicon)
             else:
-                self.PrefProbe()
                 if self.prefdate == 1:
                     self.timer.Start(1000/int(self.myprefs['fps']))
                 else:
@@ -833,14 +849,14 @@ class GUI(wx.Frame):
     def OnTimer(self,e):
         self.bplay.SetBitmapLabel(self.bstopicon)
         try:
-            #DEBUG print("selected is --> " + str(self.selected.GetName()) )
+            logging.exception("selected is --> " + str(self.selected.GetName()) )
             filepath = os.path.join(self.imgdir,self.framlist[self.blick][1])
             img = self.MakeThumbnail(filepath, self.screenWidth/2)#640
             self.PaintCanvas(img)
             self.blick = self.blick + 1
-            print(self.blick)#DEBUG
+            logging.exception(self.blick)
         except:
-            print('Timer Fail')#DEBUG
+            logging.exception('Timer Fail')
             self.timer.Stop()
             self.bplay.SetBitmapLabel(self.bplayicon)
             self.blick = 0
@@ -852,8 +868,8 @@ class GUI(wx.Frame):
         about.OnAboutBox(self)
 
     def Pref(self,e):
-        #print('prefs')
-        self.PrefProbe()
+        logging.exception('INFO: PrefProbe triggered.')
+        pref.PrefProbe()
         pref.GUIPref(None, -1, 'Stopgo Preferences', (self.screenWidth/2, self.screenHeight/2), wx.DEFAULT_FRAME_STYLE)
         self.prefdate = 1
 
@@ -863,41 +879,13 @@ class GUI(wx.Frame):
 
         try:
             self.cur.execute("UPDATE Timeline SET Blackspot=? WHERE Image=?", (0, self.lastdel )) 
-            #print(cur.fetchone())#DEBUG
+            logging.exception(cur.fetchone() )
             self.con.commit()
             sb.SetStatusText('Undo successful', 0)
         except:
             sb.SetStatusText('Cannot Undo', 0)
 
         self.BuildTimeline(dbfile)
-
-    def PrefDef(self):
-        flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
-        defpref = '{"profile": "1080p", "container": "mp4","bitrate": "21Mbps", "fps": "8", "encoder": "ffmpeg", "dir": "Desktop" }'
-        file_handle = os.open(os.path.join(os.path.expanduser("~"),'.config','stopgo.conf.json'), flags)
-        with os.fdopen(file_handle, 'w') as file_obj:
-            file_obj.write(defpref)
-            file_obj.close()
-                
-    def PrefProbe(self):
-        # on windows this path may not exist
-        if not os.path.exists(os.path.join(os.path.expanduser("~"), '.config')):
-            os.makedirs( os.path.join(os.path.expanduser("~"), '.config'))
-        else:
-            pass
-
-        # does config file exist
-        if not os.path.isfile(os.path.join(os.path.expanduser("~"),'.config','stopgo.conf.json')):
-            self.PrefDef
-        else:
-            #it already exists
-            pass
-
-        try:
-            dosiero = open(os.path.join(os.path.expanduser("~"), '.config', 'stopgo.conf.json'), 'r')
-            self.myprefs = json.load(dosiero)
-        except:
-            self.PrefDef
             
     def UndoHistory(self,e):
         # TODO: accidentally removed frames?
