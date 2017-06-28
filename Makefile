@@ -81,8 +81,9 @@ linux: $(PARTY)/$(VLC)
 	@echo "vlc" > $(PKGDIR)/usr/$(LIB)/$(PYTHON)/site-packages/vlc.pth
 	@unzip $(PARTY)/$(VLC) -d $(PKGDIR)/usr/$(LIB)/$(PYTHON)/site-packages/vlc/
 	@mkdir -p $(PKGDIR)/usr/$(LIB)/$(PYTHON)/site-packages/six
-	@mv $(SIX) $(PKGDIR)/usr/$(LIB)/$(PYTHON)/site-packages/six/EGG-INFO
+	@tar xvf $(PARTY)/$(SIX).tar.gz $(SIX)/six.egg-info --strip-component 1
 	@tar xvf $(PARTY)/$(SIX).tar.gz $(SIX)/six.py --strip-component 1
+	@mv six.egg-info $(PKGDIR)/usr/$(LIB)/$(PYTHON)/site-packages/six/EGG-INFO
 	@mv six.py $(PKGDIR)/usr/$(LIB)/$(PYTHON)/site-packages/six
 	@echo "six" > $(PKGDIR)/usr/$(LIB)/$(PYTHON)/site-packages/six.pth
 # gotta build all the deps here
