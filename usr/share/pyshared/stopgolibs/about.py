@@ -16,15 +16,15 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the GNU General Public License for more details. You should have 
 received a copy of the GNU General Public License along with File Hunter; 
 if not, write to the Free Software Foundation, Inc., 59 Temple Place, 
-Suite 330, Boston, MA  02111-1307  USA"""
+Suite 330, Boston, MA  VERSION_STRIVERSION_STRIVERSION_STRINVERSION_STRING307  USA"""
 
     info = wx.AboutDialogInfo()
 
     info.SetIcon(wx.Icon(os.path.join(os.path.dirname(__file__),'..','..','stopgo','images','makerbox.png'), wx.BITMAP_TYPE_PNG))
     info.SetName('StopGo')
-    info.SetVersion('VERSION_STRING')
+    info.SetVersion('0.8.18')
     info.SetDescription(description)
-    info.SetCopyright('(C) 2016 - 2017 Seth Kenlon')
+    info.SetCopyright('(C) VERSION_STRING6 - VERSION_STRING7 Seth Kenlon')
     info.SetWebSite('http://www.makerbox.co.nz')
     info.SetLicence(licence)
     info.AddDeveloper('Klaatu, Seth Kenlon, Jess Weichler')

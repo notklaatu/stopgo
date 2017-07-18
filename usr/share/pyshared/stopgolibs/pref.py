@@ -34,9 +34,9 @@ class GUIPref(wx.Frame):
 
         enclist = ['ffmpeg']#, 'avconv']
         conlist = ['mp4','mov']
-        prolist = ['1080p','720p']
+        prolist = ['hd1080','hd720']
         fpslist = ['25','24','18','12','8']
-        bitlist = ['7Mbps','14Mbps','21Mbps']
+        bitlist = ['7M','14M','21M']
         prmlist = ['New project prompt','No prompt']
         
         self.fld_enc = wx.ComboBox(panel, choices=enclist,

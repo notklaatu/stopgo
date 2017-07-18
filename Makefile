@@ -6,12 +6,18 @@
 PKGDIR = stopgo.appdir
 DOCDIR = usr/doc
 PYTHON = python2.7
-VLC   = python_vlc-1.1.2-py2.7.egg
-SIX   = six-1.10.0
-PARTY = thirdparty/linux
-WX    = wxPython-src-2.8.12.1.tar.bz2
-PNG   = libpng-1.4.12.tar.xz
-JPG   = jpegsrc.v8a.tar.xz
+VLC    = python_vlc-1.1.2-py2.7.egg
+SIX    = six-1.10.0
+PARTY  = thirdparty/linux
+WX     = wxPython-src-2.8.12.1.tar.bz2
+PNG    = libpng-1.4.12.tar.xz
+JPG    = jpegsrc.v8a.tar.xz
+CURVER := $(shell git describe --tags --exact-match --abbrev=0 || echo "No version found.")
+
+PAT    = $(shell echo $(CURVER) | cut -f3 -d'.')
+MIN    = $(shell echo $(CURVER) | cut -f2 -d'.')
+MAJ    = $(shell echo $(CURVER) | cut -f1 -d'.')
+NEW    = $(shell echo $$(( $(PAT) + 1 )) )
 
 # define arch for thirdpartylibs
 LBITS := $(shell getconf LONG_BIT)
@@ -22,7 +28,6 @@ else
 LIB = lib
 ARCH = i386
 endif
-
 # no longer needed but keeping as ref for looping in makefile 
 #onepm := libpng-1.5.13-5.el7.$(ARCH) \
 #	jbigkit-libs-2.0-11.el7.$(ARCH)
@@ -39,18 +44,16 @@ help:
 #	@echo "  all      : make packages for all supported platforms"
 	@echo "  linux    : make AppImage for Linux "
 	@echo "  windows  : make an .exe for Windows"
+	@echo "  release  : new release"
 #	@echo "  mac      : make a package for OS X "
 
 all: linux windows mac
 
 release:
-	CURVER := $(shell git describe --tags --exact-match --abbrev=0)	
-#(util/version.sh $(version)) || true
-	@sed 's/'$(CURVER)'/'$(version)'/' usr/share/pyshared/stopgolibs/about.py || exit "version string replacement failure"
-	@git tag $(version)
-
-echo:
-	@echo "Version updated to $(version)"
+	@sed -i 's/'$(MAJ)'.'$(MIN)'.'$(PAT)'/'$(MAJ)'.'$(MIN)'.'$(NEW)'/' usr/share/pyshared/stopgolibs/about.py
+	@git tag $(MAJ).$(MIN).$(NEW)
+	@echo "Patch version incremented to $(MAJ).$(MIN).$(NEW)"
+	@echo "Commit and push changes now."
 
 download:
 	@echo 'Fetching thirdparty libraries'
