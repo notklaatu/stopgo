@@ -30,15 +30,19 @@ ID_TIMER = 100
 
 class GUI(wx.Frame):
     def __init__(self, parent, id, title, style, clargs):
-        HANDLER = logging.handlers.WatchedFileHandler(os.environ.get("LOGFILE", os.path.join(os.path.expanduser('~'), 'stopgo.log')))
+        if _plat.startswith('win'):
+            HANDLER = logging.handlers.WatchedFileHandler(os.environ.get("LOGFILE", os.path.join(os.path.expanduser('~'), 'stopgo.log')))
+        else:
+            HANDLER = logging.handlers.WatchedFileHandler(os.environ.get("LOGFILE", os.path.join('/','tmp','stopgo.log')))
+
         FORMATTER = logging.Formatter(logging.BASIC_FORMAT)
         HANDLER.setFormatter(FORMATTER)
 
-        if clargs.has_key('debug'):
+        if not clargs.has_key('verbose'):
             root = logging.getLogger()
             root.setLevel(os.environ.get("LOGLEVEL", "INFO"))
             root.addHandler(HANDLER)
-
+            
         logging.exception("Debugging on.")
         #First retrieve the screen size of the device
         self.screenSize = wx.DisplaySize()

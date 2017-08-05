@@ -131,6 +131,8 @@ class GUIPref(wx.Frame):
 class PrefProbe():
     def __init__(self):
         # does path exist
+        self.newprefs = {"profile":"hd1080", "container":"mp4", "bitrate":"21M", "fps":"8", "encoder":"ffmpeg", "dir":"Desktop","prompt":"New project prompt"}
+
         if not os.path.exists(os.path.join(os.path.expanduser("~"), '.config')):
             os.makedirs( os.path.join(os.path.expanduser("~"), '.config'))
 
@@ -143,8 +145,6 @@ class PrefProbe():
 
 
     def PrefGet(self):
-        newprefs = {"profile":"1080p", "container":"mp4", "bitrate":"21Mbps", "fps":"8", "encoder":"ffmpeg", "dir":"Desktop","prompt":"New project prompt"}
-        
         myprefs = {}
 
         try:
@@ -152,11 +152,11 @@ class PrefProbe():
             myprefs = json.load(dosiero)
 
         except:
-            self.PrefDef(newprefs)
+            self.PrefDef()
             dosiero = open(os.path.join(os.path.expanduser("~"), '.config', 'stopgo.conf.json'), 'r')
             myprefs = json.load(dosiero)
 
-        for nkey in newprefs.items():
+        for nkey in self.newprefs.items():
             #print(type(myprefs))#DEBUG
             if myprefs.get(nkey[0]) == None:
                 #print(str(nkey[0]) + str(' not found') ) #DEBUG
@@ -165,9 +165,9 @@ class PrefProbe():
 
         return myprefs
 
-    def PrefDef(self,newprefs):
+    def PrefDef(self):
         homedir = os.path.expanduser("~/")
 
         with open(os.path.join(homedir, '.config', 'stopgo.conf.json'), 'w') as outfile:
-            json.dump(newprefs, outfile)
+            json.dump(self.newprefs, outfile)
 

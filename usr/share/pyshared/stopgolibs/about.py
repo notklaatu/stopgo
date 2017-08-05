@@ -1,5 +1,6 @@
 import wx
 import os
+from datetime import date
 
 def OnAboutBox(self):
         
@@ -24,8 +25,8 @@ Suite 330, Boston, MA  VERSION_STRIVERSION_STRIVERSION_STRINVERSION_STRING307  U
     info.SetName('StopGo')
     info.SetVersion('0.8.18')
     info.SetDescription(description)
-    info.SetCopyright('(C) VERSION_STRING6 - VERSION_STRING7 Seth Kenlon')
-    info.SetWebSite('http://www.makerbox.co.nz')
+    info.SetCopyright('(C) 2016 - ' + str(date.today().year) + ' Seth Kenlon')
+    info.SetWebSite('http://makerbox.org.nz')
     info.SetLicence(licence)
     info.AddDeveloper('Klaatu, Seth Kenlon, Jess Weichler')
 
