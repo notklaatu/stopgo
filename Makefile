@@ -3,10 +3,11 @@
 ## This is only for developers who are 
 ## building packages to distribute.
 
-PKGDIR = stopgo.appdir
+PKGDIR = stopgo.AppDir
 DOCDIR = usr/doc
 PYTHON = python2.7
 VLC    = python_vlc-1.1.2-py2.7.egg
+CORE   = vlc-core-2.2.6-2.tar.xz
 SIX    = six-1.10.0
 PARTY  = thirdparty/linux
 WX     = wxPython-src-2.8.12.1.tar.bz2
@@ -73,8 +74,11 @@ downwind:
 	@wget --no-clobber http://iweb.dl.sourceforge.net/project/wxpython/wxPython/3.0.2.0/wxPython3.0-win32-3.0.2.0-py27.exe -P thirdparty/windows/
 
 linux: $(PARTY)/$(VLC)
-	@gcc -o thirdparty/AppRun thirdparty/AppRun.c
-	@sh ./genappdir.sh -a ./thirdparty/AppRun -i ./usr/share/icons/stopgo.png -d ./usr/share/applications/stopgo.desktop $(PKGDIR)
+	@gcc -o thirdparty/AppRun ~/code/AppImageKit.clone/AppRun.c
+	#@sh ./genappdir.sh -a ./thirdparty/AppRun -i ./usr/share/icons/stopgo.png -d ./usr/share/applications/stopgo.desktop $(PKGDIR)
+	@mkdir $(PKGDIR)
+	@cp ./usr/share/applications/stopgo.desktop $(PKGDIR)
+	@cp thirdparty/AppRun $(PKGDIR)
 	@cp -rv ./usr $(PKGDIR)
 	@convert ./usr/share/icons/hicolor/scalable/stopgo.svg -size 256x256 $(PKGDIR)/usr/share/icons/stopgo.png
 	@convert ./usr/share/icons/hicolor/scalable/stopgo.svg -size 96x96 $(PKGDIR)/stopgo.png
@@ -89,17 +93,18 @@ linux: $(PARTY)/$(VLC)
 	@mv six.egg-info $(PKGDIR)/usr/$(LIB)/$(PYTHON)/site-packages/six/EGG-INFO
 	@mv six.py $(PKGDIR)/usr/$(LIB)/$(PYTHON)/site-packages/six
 	@echo "six" > $(PKGDIR)/usr/$(LIB)/$(PYTHON)/site-packages/six.pth
+	@tar xvf $(PARTY)/$(CORE) -C $(PKGDIR)
 # gotta build all the deps here
 	@cd ..
 	@find $(PKGDIR)/usr/lib64/ -type f -exec sed -i -e 's|/usr|././|g' {} \;
 	@find $(PKGDIR)/usr/lib64/ -type f -exec sed -i -e 's|././/bin/env|/usr/bin/env|g' {} \;
 	@find $(PKGDIR)/usr/lib64/ -type f -exec sed -i -e 's|././/bin/python|/usr/bin/python|g' {} \;
-	@$(HOME)/bin/AppImageAssistant.AppDir/package $(PKGDIR) stopgo.AppImage
+	@$(HOME)/bin/appimagetool-x86_64.AppImage $(PKGDIR)
 
 mac:
 	@echo "Support coming soon-ish."
 
 clean:
-	@rm -rf stopgo.appdir
+	@rm -rf stopgo.AppDir
 	@rm stopgo.AppImage || true
 
