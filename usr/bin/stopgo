@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# StopGo by MakeBox 
+# StopGo by MakerBox 
 # copyright 2016-7 by Seth Kenlon
 # copyleft  2016-7 by Klaatu
 #
@@ -8,8 +8,7 @@
 # AND MODIFY STOPGO, AND MUST NOT FORBID ANYONE FROM THE SAME.
 #
 # This file is a launcher script. It:
-#   - finds the path for StopGo libs
-#   -- adds that path to PYTHONPATH (sys.path)
+#   -- adds module path to PYTHONPATH (sys.path)
 #   - gathers up any command line args used when launching it
 #   -- sends those args to app.py
 #----------------------------------------------------------------------
@@ -17,34 +16,14 @@ import sys
 import os
 import site
 
-# The name of library dir is stopgolibs
-if getattr(sys, 'frozen', False):
-    # frozen
-    d = os.path.dirname(sys.executable)
-else:
-    # unfrozen
-    d = str(os.path.basename(__file__) ) + 'libs'
-
-# Are the libs already installed?
-for dirpath in sys.path:
-    try:
-        if d in os.listdir(dirpath):
-            #print "Running from installation..."
-            modules_path = dirpath + '/' + d
-            print("EXCEPTIONEE ---------------")
-    except:
-        pass
-
-
 # Get the dir where StopGo (this file) lives
 launch_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
-#print("DEBUG: Launch dir is ", launch_dir)#DEBUG
-modules_path = os.path.dirname(launch_dir) + "/share/pyshared/" + d
-
+print("DEBUG: Launch dir is ", launch_dir)#DEBUG
+modules_path = os.path.join(os.path.dirname(launch_dir),"lib64","python2.7","site-packages","stopgo")
+print("DEBUG: modules_path is ", modules_path)#DEBUG
 sys.path.insert(1, modules_path)
 sys.path.insert(1, os.path.join(os.path.dirname(launch_dir),'lib64','python2.7','site-packages') )
-#print "Running with local libs..."
-
+sys.path.insert(1, os.path.join(os.path.dirname(launch_dir),'lib64','python2.7','site-packages', 'wx-2.8-gtk2-unicode', 'wx', 'py' ) )
 # add the module path as valid site-package
 # so we can import modules as expected
 site.addsitedir(modules_path)
@@ -53,13 +32,13 @@ site.addsitedir(os.path.join(os.path.dirname(launch_dir),'lib64','python2.7','si
 # Launch app.py to parse opts
 try:
     import app
-except Exception, err:
-    print "Failed to import module app.py to launch the application."
-    print "ERROR:", err
-    print "Installation was assumed to be at:", modules_path
+except Exception as err:
+    print("Failed to import module app.py to launch the application.")
+    print("ERROR:", err)
+    print("Installation was assumed to be at:", modules_path)
     sys.exit(1)
 
-print("Starting StopGo...")
+print("Configuration done. Starting StopGo...")
 
 # Launch application
-app.getOptions()
+app.getOptions(launch_dir)
