@@ -16,9 +16,19 @@ You are free to use it at home, in the classroom, or anywhere!
 
 ## System Requirements
 
-Currently, StopGo works on Linux and Windows.
+Dependencies:
 
-You should install [VLC](http://videolan.org) and [ffmpeg](http://ffmpeg.org) (**not** libav) before using StopGo.
+* Python 2.x
+* wxPython or wxGTK
+* six
+* vlc
+* vlc.py
+* ffmpeg (not libav)
+* PythonMagick
+
+Currently, StopGo works on Linux and, with a little configuration, Windows.
+
+Install [VLC](http://videolan.org) and [ffmpeg](http://ffmpeg.org) (**not** libav) before using StopGo.
 
 We are working on Mac support, too!
 
