@@ -2,7 +2,7 @@
 
 StopGo is a stop-motion animation application. It's goal is to be a
 simple and direct way to take a series of photographs, with
-onion-skinning, to create stop-motion animation. 
+onion-skinning, to create stop-motion animation.
 
 StopGo is free and open source.
 
@@ -10,7 +10,7 @@ StopGo is free and open source.
 
 Github is where we do development. If you want to download and use StopGo to make movies, get it here:
 
-http://makerbox.org.nz/stopgo/
+http://makerbox.org.nz/about-2/stopgo/
 
 You are free to use it at home, in the classroom, or anywhere!
 
